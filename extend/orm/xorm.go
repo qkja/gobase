@@ -3,12 +3,13 @@ package orm
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/isyscore/isc-gobase/bean"
 	"github.com/isyscore/isc-gobase/config"
 	"github.com/isyscore/isc-gobase/constants"
 	"github.com/isyscore/isc-gobase/listener"
 	"github.com/isyscore/isc-gobase/logger"
-	"time"
 	"xorm.io/xorm"
 	"xorm.io/xorm/contexts"
 	"xorm.io/xorm/log"
@@ -22,15 +23,15 @@ type GobaseXormHook interface {
 var defaultXormHooks []DefaultXormHook
 
 type DefaultXormHook struct {
-	driverName string
+	driverName     string
 	gobaseXormHook GobaseXormHook
 }
 
-func (defaultHook *DefaultXormHook)BeforeProcess(c *contexts.ContextHook) (context.Context, error) {
+func (defaultHook *DefaultXormHook) BeforeProcess(c *contexts.ContextHook) (context.Context, error) {
 	return defaultHook.gobaseXormHook.BeforeProcess(c, defaultHook.driverName)
 }
 
-func (defaultHook *DefaultXormHook)AfterProcess(c *contexts.ContextHook) error {
+func (defaultHook *DefaultXormHook) AfterProcess(c *contexts.ContextHook) error {
 	return defaultHook.gobaseXormHook.AfterProcess(c, defaultHook.driverName)
 }
 
@@ -80,6 +81,9 @@ func doNewXormDb(datasourceName string, params map[string]string) (*xorm.Engine,
 
 	var dsn = getDbDsn(datasourceConfig.DriverName, datasourceConfig)
 	var xormDb *xorm.Engine
+	if datasourceConfig.DriverName == "postgresql" {
+		datasourceConfig.DriverName = "postgres"
+	}
 	xormDb, err = xorm.NewEngineWithParams(datasourceConfig.DriverName, dsn, params)
 	if err != nil {
 		logger.Warn("获取数据库db异常：%v", err.Error())
@@ -116,7 +120,7 @@ func doNewXormDb(datasourceName string, params map[string]string) (*xorm.Engine,
 
 	xormDb.ShowSQL(true)
 	xormDb.SetLogger(&XormLoggerAdapter{})
-	bean.AddBean(constants.BeanNameXormPre + datasourceName, xormDb)
+	bean.AddBean(constants.BeanNameXormPre+datasourceName, xormDb)
 
 	// 添加orm的配置监听器
 	listener.AddListener(listener.EventOfConfigChange, ConfigChangeListenerOfOrm)
@@ -203,4 +207,3 @@ func (l *XormLoggerAdapter) ShowSQL(show ...bool) {
 func (l *XormLoggerAdapter) IsShowSQL() bool {
 	return true
 }
-
