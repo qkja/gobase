@@ -8,17 +8,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"github.com/isyscore/isc-gobase/system/cpu"
-	"github.com/isyscore/isc-gobase/system/net"
-	"github.com/tklauser/go-sysconf"
-	"golang.org/x/sys/unix"
 	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/qkja/gobase/system/common"
+	"github.com/qkja/gobase/system/cpu"
+	"github.com/qkja/gobase/system/net"
+	"github.com/tklauser/go-sysconf"
+	"golang.org/x/sys/unix"
 )
 
 var PageSize = uint64(os.Getpagesize())

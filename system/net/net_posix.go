@@ -5,11 +5,12 @@ package net
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
 	"net"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 // Connections Return a list of network connections opened.

@@ -1,15 +1,16 @@
 package redis
 
 import (
-	"github.com/isyscore/isc-gobase/bean"
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/constants"
-	"github.com/isyscore/isc-gobase/logger"
-	baseTime "github.com/isyscore/isc-gobase/time"
+	"github.com/qkja/gobase/bean"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/constants"
+	"github.com/qkja/gobase/logger"
+	baseTime "github.com/qkja/gobase/time"
+
 	// goredis "github.com/redis/go-redis/v9"
 	goredis "github.com/go-redis/redis/v8"
-	//"github.com/isyscore/isc-gobase/tracing"
-	//"github.com/isyscore/isc-gobase/tracing"
+	//"github.com/qkja/gobase/tracing"
+	//"github.com/qkja/gobase/tracing"
 	"time"
 )
 

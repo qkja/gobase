@@ -5,9 +5,10 @@ package mem
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"golang.org/x/sys/unix"
 	"unsafe"
+
+	"github.com/qkja/gobase/system/common"
+	"golang.org/x/sys/unix"
 )
 
 func getHwMemsize() (uint64, error) {

@@ -3,12 +3,13 @@ package test
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/extend/etcd"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/time"
-	clientv3 "go.etcd.io/etcd/client/v3"
 	"testing"
+
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/extend/etcd"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/time"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 func Test1(t *testing.T) {

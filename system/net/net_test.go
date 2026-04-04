@@ -2,10 +2,11 @@ package net
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
 	"math"
 	"os"
 	"testing"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 func skipIfNotImplementedErr(t *testing.T, err error) {

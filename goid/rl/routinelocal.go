@@ -8,7 +8,7 @@ import (
 	"unsafe"
 )
 
-const labelTag = "github.com/isyscore/isc-gobase"
+const labelTag = "github.com/qkja/gobase"
 
 var lastID uintptr
 

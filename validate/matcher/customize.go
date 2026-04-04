@@ -1,10 +1,11 @@
 package matcher
 
 import (
-	"github.com/isyscore/isc-gobase/constants"
-	"github.com/isyscore/isc-gobase/logger"
 	"reflect"
 	"strings"
+
+	"github.com/qkja/gobase/constants"
+	"github.com/qkja/gobase/logger"
 )
 
 type CustomizeMatch struct {

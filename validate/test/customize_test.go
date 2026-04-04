@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/validate"
-	"github.com/isyscore/isc-gobase/validate/test/fun"
 	"math"
 	"math/rand"
 	"testing"
 	t0 "time"
+
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/validate"
+	"github.com/qkja/gobase/validate/test/fun"
 )
 
 func TestCustomize1(t *testing.T) {
@@ -288,7 +289,6 @@ func TestFun(t *testing.T) {
 	//fmt.Println(rand.Intn(2))
 	//// 0,1
 	//fmt.Println(rand.Intn(2))
-
 
 	//datas := []int{1,2, 3, 4, 5}
 	//fmt.Println(datas[0:2])

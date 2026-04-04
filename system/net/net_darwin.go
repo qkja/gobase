@@ -6,11 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 var (

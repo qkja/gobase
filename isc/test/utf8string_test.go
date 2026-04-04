@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	. "github.com/isyscore/isc-gobase/isc"
+	. "github.com/qkja/gobase/isc"
 )
 
 func TestUTF8String(t *testing.T) {

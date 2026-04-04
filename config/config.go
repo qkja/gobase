@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/listener"
 	"log"
 	"os"
 	"path"
@@ -11,10 +10,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gin-gonic/gin"
-	"github.com/isyscore/isc-gobase/file"
+	"github.com/qkja/gobase/listener"
 
-	"github.com/isyscore/isc-gobase/isc"
+	"github.com/gin-gonic/gin"
+	"github.com/qkja/gobase/file"
+
+	"github.com/qkja/gobase/isc"
 	"gopkg.in/yaml.v2"
 )
 
@@ -541,7 +542,7 @@ func parseProperties(key string, value any, resultMap map[string]any) (map[strin
 			return resultMap, err
 		}
 		for k, v := range valueMap {
-			resultMap, err = parseProperties(key + "." + k, v, resultMap)
+			resultMap, err = parseProperties(key+"."+k, v, resultMap)
 		}
 	} else if reflect.ValueOf(value).Kind() == reflect.Slice || reflect.ValueOf(value).Kind() == reflect.Array {
 		values := []any{}
@@ -550,13 +551,13 @@ func parseProperties(key string, value any, resultMap map[string]any) (map[strin
 			return resultMap, err
 		}
 		for i, v := range values {
-			resultMap[key + "[" + isc.ToString(i) + "]"] = v
-			resultMap, err = parseProperties(key + "[" + isc.ToString(i) + "]", v, resultMap)
+			resultMap[key+"["+isc.ToString(i)+"]"] = v
+			resultMap, err = parseProperties(key+"["+isc.ToString(i)+"]", v, resultMap)
 		}
 	} else {
 		if reflect.ValueOf(value).Kind() == reflect.String && isc.ToString(value) != "" {
 			resultMap[key] = value
-		} else if value == nil{
+		} else if value == nil {
 			resultMap[key] = value
 		}
 	}
@@ -916,16 +917,16 @@ type ApplicationProperty struct {
 	ValueDeepMap map[string]any
 }
 
-//LoadYamlConfig read fileName from private path fileName,eg:application.yml, and transform it to AConfig
-//note: AConfig must be a pointer
+// LoadYamlConfig read fileName from private path fileName,eg:application.yml, and transform it to AConfig
+// note: AConfig must be a pointer
 func LoadYamlConfig(fileName string, AConfig any, handler func(data []byte, AConfig any) error) error {
 	pwd, _ := os.Getwd()
 	fp := filepath.Join(pwd, fileName)
 	return LoadYamlConfigByAbsolutPath(fp, AConfig, handler)
 }
 
-//LoadYamlConfigByAbsolutPath read fileName from absolute path fileName,eg:/home/isc-gobase/application.yml, and transform it to AConfig
-//note: AConfig must be a pointer
+// LoadYamlConfigByAbsolutPath read fileName from absolute path fileName,eg:/home/isc-gobase/application.yml, and transform it to AConfig
+// note: AConfig must be a pointer
 func LoadYamlConfigByAbsolutPath(path string, AConfig any, handler func(data []byte, AConfig any) error) error {
 	data, err := os.ReadFile(path)
 	if err != nil {

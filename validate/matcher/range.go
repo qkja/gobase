@@ -2,7 +2,6 @@ package matcher
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/constants"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -10,12 +9,14 @@ import (
 	t0 "time"
 	"unicode/utf8"
 
+	"github.com/qkja/gobase/constants"
+
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
-	"github.com/isyscore/isc-gobase/logger"
-	"github.com/isyscore/isc-gobase/time"
+	"github.com/qkja/gobase/logger"
+	"github.com/qkja/gobase/time"
 )
 
 type RangeMatch struct {

@@ -2,13 +2,14 @@ package debug
 
 import (
 	"context"
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/logger"
-	baseNet "github.com/isyscore/isc-gobase/system/net"
-	etcdClientV3 "go.etcd.io/etcd/client/v3"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/logger"
+	baseNet "github.com/qkja/gobase/system/net"
+	etcdClientV3 "go.etcd.io/etcd/client/v3"
 )
 
 const (
@@ -22,6 +23,7 @@ var etcdClient *etcdClientV3.Client
 var keyListenerMap map[string][]KeyListener
 
 var loadLock sync.Mutex
+
 type KeyListener func(key string, value string)
 
 func Init() {

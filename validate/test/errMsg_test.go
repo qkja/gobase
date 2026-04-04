@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/isyscore/isc-gobase/validate"
 	"testing"
+
+	"github.com/qkja/gobase/validate"
 )
 
 type ErrMsgEntity1 struct {

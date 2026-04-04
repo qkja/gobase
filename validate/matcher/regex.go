@@ -2,10 +2,11 @@ package matcher
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/constants"
 	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/qkja/gobase/constants"
 )
 
 type RegexMatch struct {

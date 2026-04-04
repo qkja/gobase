@@ -2,17 +2,18 @@ package test
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/cron"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/listener"
-	"github.com/isyscore/isc-gobase/server/rsp"
-	"github.com/isyscore/isc-gobase/server/test/pojo"
 	"os"
 	"testing"
 
+	"github.com/qkja/gobase/cron"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/listener"
+	"github.com/qkja/gobase/server/rsp"
+	"github.com/qkja/gobase/server/test/pojo"
+
 	"github.com/gin-gonic/gin"
-	"github.com/isyscore/isc-gobase/logger"
-	"github.com/isyscore/isc-gobase/server"
+	"github.com/qkja/gobase/logger"
+	"github.com/qkja/gobase/server"
 )
 
 func TestServer(t *testing.T) {

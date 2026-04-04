@@ -5,7 +5,7 @@ import (
 	"testing"
 	t0 "time"
 
-	"github.com/isyscore/isc-gobase/time"
+	"github.com/qkja/gobase/time"
 )
 
 func TestTime(t *testing.T) {

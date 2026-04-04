@@ -1,8 +1,9 @@
 package test
 
 import (
-	"github.com/isyscore/isc-gobase/isc"
 	"testing"
+
+	"github.com/qkja/gobase/isc"
 )
 
 func TestSet(t *testing.T) {

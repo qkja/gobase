@@ -9,7 +9,7 @@ xorm: 这个是xorm.io不是go-xorm，go-xorm暂时不支持
 ### 单数据源
 #### 代码
 ```go
-import "github.com/isyscore/isc-gobase/extend/orm"
+import "github.com/qkja/gobase/extend/orm"
 
 // gorm：获取默认配置库实例
 orm.NewGormDb()
@@ -58,7 +58,7 @@ base:
 ### 多数据源
 #### 代码
 ```go
-import "github.com/isyscore/isc-gobase/extend/orm"
+import "github.com/qkja/gobase/extend/orm"
 
 // gorm：根据数据源配置名获取库实例
 orm.NewGormDbWithName(datasourceName string)

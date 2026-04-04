@@ -1,11 +1,12 @@
 package debug
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/server/rsp"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/server/rsp"
 )
 
 func Help(c *gin.Context) {

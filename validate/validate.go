@@ -9,11 +9,11 @@ import (
 	"sync"
 
 	"github.com/antonmedv/expr"
-	"github.com/isyscore/isc-gobase/constants"
-	"github.com/isyscore/isc-gobase/goid"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/logger"
-	"github.com/isyscore/isc-gobase/validate/matcher"
+	"github.com/qkja/gobase/constants"
+	"github.com/qkja/gobase/goid"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/logger"
+	"github.com/qkja/gobase/validate/matcher"
 )
 
 var lock sync.Mutex

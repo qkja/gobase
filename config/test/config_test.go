@@ -1,33 +1,35 @@
 package test
 
 import (
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/logger"
-	"github.com/magiconair/properties/assert"
 	"os"
 	"testing"
+
+	"github.com/magiconair/properties/assert"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/logger"
 )
 
-//key1:
-//  key2:
-//    intdata: 12
-//    strdata: "data"
-//    booldata: true
-//    int64data: 12
-//    floatdata: 12.3
-//    objdata:
-//      field1: 1
-//      field2: "value2"
-//    arraydata:
-//      - 1
-//      - 2
-//      - 3
-//    arrayobjdata:
-//      - field1: 1
-//        field2: "name1"
-//      - field1: 2
-//        field2: "name2"
+// key1:
+//
+//	key2:
+//	  intdata: 12
+//	  strdata: "data"
+//	  booldata: true
+//	  int64data: 12
+//	  floatdata: 12.3
+//	  objdata:
+//	    field1: 1
+//	    field2: "value2"
+//	  arraydata:
+//	    - 1
+//	    - 2
+//	    - 3
+//	  arrayobjdata:
+//	    - field1: 1
+//	      field2: "name1"
+//	    - field1: 2
+//	      field2: "name2"
 func TestLoadConfig(t *testing.T) {
 	config.LoadConfig()
 

@@ -3,9 +3,10 @@ package test
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/config"
-	orm2 "github.com/isyscore/isc-gobase/extend/orm"
 	"testing"
+
+	"github.com/qkja/gobase/config"
+	orm2 "github.com/qkja/gobase/extend/orm"
 	"xorm.io/xorm/contexts"
 )
 
@@ -43,7 +44,6 @@ func TestXorm1(t *testing.T) {
 	// 查询：多行
 	fmt.Println(demo)
 }
-
 
 type GobaseXormHook struct {
 }

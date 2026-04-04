@@ -2,7 +2,8 @@ package cpu
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
+
+	"github.com/qkja/gobase/system/common"
 
 	"os"
 	"runtime"

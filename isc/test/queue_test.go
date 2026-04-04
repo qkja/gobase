@@ -2,9 +2,10 @@ package test
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/isc"
 	"testing"
 	"time"
+
+	"github.com/qkja/gobase/isc"
 )
 
 func TestAdd(t *testing.T) {

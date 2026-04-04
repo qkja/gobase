@@ -3,9 +3,10 @@ package net
 import (
 	"context"
 	"encoding/json"
-	"github.com/isyscore/isc-gobase/system/common"
 	"net"
 	"time"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 var invoke common.Invoker = common.Invoke{}
@@ -265,7 +266,7 @@ func getIOCountersAll(n []IOCountersStat) ([]IOCountersStat, error) {
 // 判断网络是否可达
 // ipAndPort：格式：{ip}:{port}
 func IpPortAvailable(ipAndPort string) bool {
-	conn, err := net.DialTimeout("tcp", ipAndPort, 2 * time.Second)
+	conn, err := net.DialTimeout("tcp", ipAndPort, 2*time.Second)
 	if err != nil {
 		return false
 	} else {

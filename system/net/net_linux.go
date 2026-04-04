@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
 	"io"
 	"io/ioutil"
 	"net"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 const ( // Conntrack Column numbers
@@ -159,7 +160,8 @@ var netProtocols = []string{
 // If protocols is empty then all protocols are returned, otherwise
 // just the protocols in the list are returned.
 // Available protocols:
-//   ip,icmp,icmpmsg,tcp,udp,udplite
+//
+//	ip,icmp,icmpmsg,tcp,udp,udplite
 func ProtoCounters(protocols []string) ([]ProtoCountersStat, error) {
 	return ProtoCountersWithContext(context.Background(), protocols)
 }

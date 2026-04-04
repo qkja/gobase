@@ -5,7 +5,7 @@ import (
 
 	t0 "time"
 
-	"github.com/isyscore/isc-gobase/time"
+	"github.com/qkja/gobase/time"
 )
 
 func TestTimer(t *testing.T) {

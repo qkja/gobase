@@ -1,12 +1,13 @@
 package bean
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/logger"
-	"github.com/isyscore/isc-gobase/server/rsp"
 	"reflect"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/logger"
+	"github.com/qkja/gobase/server/rsp"
 )
 
 var BeanMap map[string]any

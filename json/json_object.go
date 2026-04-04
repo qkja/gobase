@@ -2,9 +2,10 @@ package json
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/isc"
 	"reflect"
 	"strings"
+
+	"github.com/qkja/gobase/isc"
 )
 
 type Object struct {

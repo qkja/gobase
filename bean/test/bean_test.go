@@ -1,10 +1,11 @@
 package test
 
 import (
-	"github.com/isyscore/isc-gobase/bean"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/magiconair/properties/assert"
 	"testing"
+
+	"github.com/magiconair/properties/assert"
+	"github.com/qkja/gobase/bean"
+	"github.com/qkja/gobase/isc"
 )
 
 func TestAddBean(t *testing.T) {

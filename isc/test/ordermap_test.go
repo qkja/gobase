@@ -2,8 +2,9 @@ package test
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/isc"
 	"testing"
+
+	"github.com/qkja/gobase/isc"
 )
 
 func TestOrderMap(t *testing.T) {

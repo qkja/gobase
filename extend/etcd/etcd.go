@@ -2,19 +2,22 @@ package etcd
 
 import (
 	"context"
+
 	"github.com/golang/glog"
-	"github.com/isyscore/isc-gobase/bean"
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/constants"
-	"github.com/isyscore/isc-gobase/goid"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/logger"
-	//"github.com/isyscore/isc-gobase/tracing"
+	"github.com/qkja/gobase/bean"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/constants"
+	"github.com/qkja/gobase/goid"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/logger"
+
+	//"github.com/qkja/gobase/tracing"
+	"io"
+	"time"
+
 	etcdClientV3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"io"
-	"time"
 )
 
 var EtcdHooks []GobaseEtcdHook
@@ -281,7 +284,7 @@ func (etcdWrap *EtcdClientWrap) RequestProgress(ctx context.Context) error {
 	return etcdWrap.Client.RequestProgress(ctx)
 }
 
-func (etcdWrap *EtcdClientWrap)Authenticate(ctx context.Context, name string, password string) (*etcdClientV3.AuthenticateResponse, error) {
+func (etcdWrap *EtcdClientWrap) Authenticate(ctx context.Context, name string, password string) (*etcdClientV3.AuthenticateResponse, error) {
 	return etcdWrap.Client.Authenticate(ctx, name, password)
 }
 
@@ -346,7 +349,7 @@ func (etcdWrap *EtcdClientWrap) RoleList(ctx context.Context) (*etcdClientV3.Aut
 }
 
 func (etcdWrap *EtcdClientWrap) RoleRevokePermission(ctx context.Context, role string, key, rangeEnd string) (*etcdClientV3.AuthRoleRevokePermissionResponse, error) {
-	return etcdWrap.Client.RoleRevokePermission(ctx, role,key, rangeEnd)
+	return etcdWrap.Client.RoleRevokePermission(ctx, role, key, rangeEnd)
 }
 
 func (etcdWrap *EtcdClientWrap) RoleDelete(ctx context.Context, role string) (*etcdClientV3.AuthRoleDeleteResponse, error) {

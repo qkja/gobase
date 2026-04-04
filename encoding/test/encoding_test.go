@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/isyscore/isc-gobase/encoding"
-	"github.com/isyscore/isc-gobase/isc"
+	"github.com/qkja/gobase/encoding"
+	"github.com/qkja/gobase/isc"
 )
 
 var testData = []struct{ utf8, other, otherEncoding string }{

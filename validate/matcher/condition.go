@@ -2,15 +2,16 @@ package matcher
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/constants"
 	"reflect"
 	"strings"
+
+	"github.com/qkja/gobase/constants"
 
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/parser"
 	"github.com/antonmedv/expr/vm"
-	"github.com/isyscore/isc-gobase/logger"
+	"github.com/qkja/gobase/logger"
 )
 
 type ConditionMatch struct {

@@ -1,10 +1,11 @@
 package matcher
 
 import (
-	"github.com/isyscore/isc-gobase/constants"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/qkja/gobase/constants"
 )
 
 func CollectAccept(objectTypeFullName string, _ reflect.Kind, objectFieldName string, tagName string, subCondition string, errMsg string) {

@@ -2,9 +2,10 @@ package test
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/isc"
 	"reflect"
 	"testing"
+
+	"github.com/qkja/gobase/isc"
 )
 
 func TestField(t *testing.T) {
@@ -18,5 +19,5 @@ func TestField(t *testing.T) {
 
 type PrivateFieldStruct struct {
 	name string
-	age int
+	age  int
 }

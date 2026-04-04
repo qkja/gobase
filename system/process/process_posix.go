@@ -5,14 +5,15 @@ package process
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"golang.org/x/sys/unix"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/qkja/gobase/system/common"
+	"golang.org/x/sys/unix"
 )
 
 // POSIX

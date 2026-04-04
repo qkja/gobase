@@ -3,11 +3,12 @@ package test
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/config"
-	orm2 "github.com/isyscore/isc-gobase/extend/orm"
-	"github.com/isyscore/isc-gobase/logger"
 	"testing"
 	"time"
+
+	"github.com/qkja/gobase/config"
+	orm2 "github.com/qkja/gobase/extend/orm"
+	"github.com/qkja/gobase/logger"
 )
 
 func TestGorm1(t *testing.T) {
@@ -95,10 +96,10 @@ func TestGormOfLoggerChange(t *testing.T) {
 }
 
 type GobaseDemo struct {
-	Id         uint64
-	Name       string
-	Age        int
-	Address    string
+	Id      uint64
+	Name    string
+	Age     int
+	Address string
 }
 
 func (GobaseDemo) TableName() string {
@@ -108,13 +109,13 @@ func (GobaseDemo) TableName() string {
 type GobaseOrmHookDemo struct {
 }
 
-func (*GobaseOrmHookDemo) Before(ctx context.Context, driverName string, parameters map[string]any) (context.Context, error){
+func (*GobaseOrmHookDemo) Before(ctx context.Context, driverName string, parameters map[string]any) (context.Context, error) {
 	fmt.Println("before")
 	fmt.Println(parameters)
 	return ctx, nil
 }
 
-func (*GobaseOrmHookDemo) After(ctx context.Context, driverName string, parameters map[string]any) (context.Context, error){
+func (*GobaseOrmHookDemo) After(ctx context.Context, driverName string, parameters map[string]any) (context.Context, error) {
 	fmt.Println("after")
 	fmt.Println(parameters)
 	return ctx, nil
@@ -125,5 +126,3 @@ func (*GobaseOrmHookDemo) Err(ctx context.Context, driverName string, err error,
 	fmt.Println(err.Error())
 	return nil
 }
-
-

@@ -47,7 +47,7 @@ base:
 ```go
 import (
     "testing"
-    "github.com/isyscore/isc-gobase/extend/redis"
+    "github.com/qkja/gobase/extend/redis"
 )
 
 func TestRedis(t *testing.T) {

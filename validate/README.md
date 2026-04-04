@@ -14,12 +14,12 @@ import (
   "bytes"
     "encoding/json"
     "github.com/gin-gonic/gin"
-    "github.com/isyscore/isc-gobase/http"
-    "github.com/isyscore/isc-gobase/isc"
-    "github.com/isyscore/isc-gobase/logger"
-    "github.com/isyscore/isc-gobase/server"
-    "github.com/isyscore/isc-gobase/server/rsp"
-    "github.com/isyscore/isc-gobase/validate"
+    "github.com/qkja/gobase/http"
+    "github.com/qkja/gobase/isc"
+    "github.com/qkja/gobase/logger"
+    "github.com/qkja/gobase/server"
+    "github.com/qkja/gobase/server/rsp"
+    "github.com/qkja/gobase/validate"
     "io/ioutil"
     "strings"
 )
@@ -104,8 +104,8 @@ curl -X POST \
 package main
 
 import (
-    "github.com/isyscore/isc-gobase/validate"
-    "github.com/isyscore/isc-gobase/logger"
+    "github.com/qkja/gobase/validate"
+    "github.com/qkja/gobase/logger"
 )
 
 type DemoInsert struct {
@@ -528,7 +528,7 @@ package fun
 
 import (
     "fmt"
-    "github.com/isyscore/isc-gobase/validate"
+    "github.com/qkja/gobase/validate"
 )
 
 type CustomizeEntity2 struct {

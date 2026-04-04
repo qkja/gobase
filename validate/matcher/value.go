@@ -2,11 +2,12 @@ package matcher
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/constants"
 	"reflect"
 	"strings"
 
-	"github.com/isyscore/isc-gobase/logger"
+	"github.com/qkja/gobase/constants"
+
+	"github.com/qkja/gobase/logger"
 )
 
 type ValueMatch struct {

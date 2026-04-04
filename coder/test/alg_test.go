@@ -2,9 +2,10 @@ package test
 
 import (
 	"crypto/dsa"
-	"github.com/isyscore/isc-gobase/coder"
-	"github.com/isyscore/isc-gobase/file"
 	"testing"
+
+	"github.com/qkja/gobase/coder"
+	"github.com/qkja/gobase/file"
 )
 
 func TestMd5(t *testing.T) {

@@ -2,10 +2,11 @@ package test
 
 import (
 	"encoding/json"
-	"github.com/isyscore/isc-gobase/test"
 	"testing"
 
-	"github.com/isyscore/isc-gobase/isc"
+	"github.com/qkja/gobase/test"
+
+	"github.com/qkja/gobase/isc"
 )
 
 // 对以下的api进行测试

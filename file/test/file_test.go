@@ -1,13 +1,14 @@
 package test
 
 import (
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/magiconair/properties/assert"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/isyscore/isc-gobase/file"
+	"github.com/magiconair/properties/assert"
+	"github.com/qkja/gobase/isc"
+
+	"github.com/qkja/gobase/file"
 )
 
 func TestFile(t *testing.T) {

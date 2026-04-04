@@ -32,7 +32,7 @@ func (e1 Event1) Name() string {
 ```go
 import (
     "fmt"
-    "github.com/isyscore/isc-gobase/listener"
+    "github.com/qkja/gobase/listener"
     "testing"
 )
 

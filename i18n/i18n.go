@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	f0 "github.com/isyscore/isc-gobase/file"
+	f0 "github.com/qkja/gobase/file"
 )
 
 // InitI18N 初始化国际化，传入的语言为默认语言

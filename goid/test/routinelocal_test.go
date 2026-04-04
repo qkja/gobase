@@ -2,9 +2,10 @@ package test
 
 import (
 	"context"
-	"github.com/isyscore/isc-gobase/goid/rl"
 	"testing"
 	"time"
+
+	"github.com/qkja/gobase/goid/rl"
 )
 
 type myCtxKey struct {

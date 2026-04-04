@@ -4,8 +4,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/isyscore/isc-gobase/server"
-	"github.com/isyscore/isc-gobase/websocket"
+	"github.com/qkja/gobase/server"
+	"github.com/qkja/gobase/websocket"
 )
 
 func TestWebSocketServer(t *testing.T) {

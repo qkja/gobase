@@ -7,8 +7,6 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"golang.org/x/sys/unix"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -16,6 +14,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/qkja/gobase/system/common"
+	"golang.org/x/sys/unix"
 )
 
 type LSB struct {

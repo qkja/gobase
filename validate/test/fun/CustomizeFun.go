@@ -2,8 +2,9 @@ package fun
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/validate"
 	"strconv"
+
+	"github.com/qkja/gobase/validate"
 )
 
 type CustomizeEntity1 struct {
@@ -37,10 +38,10 @@ type CustomizeEntity6 struct {
 }
 
 type CustomizeEntity7 struct {
-	Name *string `match:"customize=judge7Name"`
-	Flag *bool `match:"customize=judge7Flag"`
-	Flag2 *bool `match:"customize=judge7Flag2"`
-	Age  int
+	Name  *string `match:"customize=judge7Name"`
+	Flag  *bool   `match:"customize=judge7Flag"`
+	Flag2 *bool   `match:"customize=judge7Flag2"`
+	Age   int
 }
 
 func JudgeString1(name string) bool {

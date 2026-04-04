@@ -15,8 +15,8 @@ package main
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/isyscore/isc-gobase/server"
-    "github.com/isyscore/isc-gobase/server/rsp"
+    "github.com/qkja/gobase/server"
+    "github.com/qkja/gobase/server/rsp"
 )
 
 func main() {
@@ -199,7 +199,7 @@ swag init
 package main
 
 import (
-    "github.com/isyscore/isc-gobase/server"
+    "github.com/qkja/gobase/server"
     // 这里：不引入就会在swagger生成的页面中找不到doc.json文件 
     _ "isc-xx-service/docs"
 )

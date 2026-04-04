@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/isyscore/isc-gobase/validate"
+	"github.com/qkja/gobase/validate"
 )
 
 type IsUnBlankEntity1 struct {

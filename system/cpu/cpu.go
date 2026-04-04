@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
 	"math"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 // TimesStat contains the amounts of time the CPU has spent performing different

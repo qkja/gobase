@@ -2,10 +2,11 @@ package test
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/debug"
-	"github.com/isyscore/isc-gobase/time"
 	"testing"
 	t0 "time"
+
+	"github.com/qkja/gobase/debug"
+	"github.com/qkja/gobase/time"
 )
 
 func TestWatcher(t *testing.T) {

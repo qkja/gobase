@@ -1,10 +1,11 @@
 package test
 
 import (
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/logger"
-	"github.com/sirupsen/logrus"
 	"testing"
+
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/logger"
+	"github.com/sirupsen/logrus"
 )
 
 func TestInfo(t *testing.T) {

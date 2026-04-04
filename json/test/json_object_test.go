@@ -2,22 +2,23 @@ package test
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/json"
-	"github.com/magiconair/properties/assert"
 	"testing"
+
+	"github.com/magiconair/properties/assert"
+	"github.com/qkja/gobase/json"
 )
 
-//{
-//    "k1":12,
-//    "k2":true,
-//    "k3":{
-//        "k31":32,
-//        "k32":"str",
-//        "k33":{
-//            "k331":12
-//        }
-//    }
-//}
+//	{
+//	   "k1":12,
+//	   "k2":true,
+//	   "k3":{
+//	       "k31":32,
+//	       "k32":"str",
+//	       "k33":{
+//	           "k331":12
+//	       }
+//	   }
+//	}
 var str = "{\n    \"k1\":12,\n    \"k2\":true,\n    \"k3\":{\n        \"k31\":32,\n        \"k32\":\"str\",\n        \"k33\":{\n            \"k331\":12\n        }\n    }\n}"
 
 func TestLoad(t *testing.T) {
@@ -109,11 +110,11 @@ func TestPut4(t *testing.T) {
 }
 
 type TestEntity struct {
-	Field1 bool
+	Field1       bool
 	Field2Struct TestEntity2
 }
 
 type TestEntity2 struct {
-	F21 int
+	F21     int
 	K2array []int
 }

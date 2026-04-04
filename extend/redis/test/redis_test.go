@@ -2,11 +2,12 @@ package test
 
 import (
 	"context"
-	redis2 "github.com/isyscore/isc-gobase/extend/redis"
-	"github.com/magiconair/properties/assert"
-	goredis "github.com/redis/go-redis/v9"
 	"testing"
 	"time"
+
+	"github.com/magiconair/properties/assert"
+	redis2 "github.com/qkja/gobase/extend/redis"
+	goredis "github.com/redis/go-redis/v9"
 )
 
 var rdb goredis.UniversalClient

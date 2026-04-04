@@ -4,9 +4,10 @@ package process
 
 import (
 	"errors"
-	"github.com/isyscore/isc-gobase/system/common"
 	"syscall"
 	"unsafe"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 type PROCESS_MEMORY_COUNTERS struct {

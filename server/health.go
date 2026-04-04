@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/isyscore/isc-gobase/config"
+	"github.com/qkja/gobase/config"
 
 	"github.com/gin-gonic/gin"
-	h2 "github.com/isyscore/isc-gobase/http"
-	t2 "github.com/isyscore/isc-gobase/time"
+	h2 "github.com/qkja/gobase/http"
+	t2 "github.com/qkja/gobase/time"
 )
 
 var procId = os.Getpid()

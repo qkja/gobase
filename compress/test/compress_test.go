@@ -1,10 +1,11 @@
 package test
 
 import (
-	"github.com/isyscore/isc-gobase/compress"
-	"github.com/isyscore/isc-gobase/file"
-	"github.com/isyscore/isc-gobase/isc"
 	"testing"
+
+	"github.com/qkja/gobase/compress"
+	"github.com/qkja/gobase/file"
+	"github.com/qkja/gobase/isc"
 )
 
 func TestGZip(t *testing.T) {

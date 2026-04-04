@@ -6,11 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"github.com/tklauser/go-sysconf"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/qkja/gobase/system/common"
+	"github.com/tklauser/go-sysconf"
 )
 
 var ClocksPerSec = float64(100)

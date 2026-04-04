@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/go-playground/assert/v2"
-	"github.com/isyscore/isc-gobase/isc"
+	"github.com/qkja/gobase/isc"
 )
 
 func TestString(t *testing.T) {

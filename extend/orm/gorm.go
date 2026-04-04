@@ -3,14 +3,17 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"strings"
+	"time"
+
 	driverMysql "github.com/go-sql-driver/mysql"
-	"github.com/isyscore/isc-gobase/bean"
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/constants"
-	"github.com/isyscore/isc-gobase/listener"
-	baseLogger "github.com/isyscore/isc-gobase/logger"
 	"github.com/lib/pq"
 	"github.com/mattn/go-sqlite3"
+	"github.com/qkja/gobase/bean"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/constants"
+	"github.com/qkja/gobase/listener"
+	baseLogger "github.com/qkja/gobase/logger"
 	"github.com/qustavo/sqlhooks/v2"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
@@ -19,8 +22,6 @@ import (
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"strings"
-	"time"
 )
 
 func NewGormDb() (*gorm.DB, error) {
@@ -149,8 +150,8 @@ func sqlRegister(driverName string) {
 
 func getMysqlConfig(dsn, driverName string) mysql.Config {
 	return mysql.Config{
-		DriverName: driverName,
-		DSN: dsn,
+		DriverName:                    driverName,
+		DSN:                           dsn,
 		ServerVersion:                 config.GetValueStringDefault("base.datasource.mysql.server-version", ""),
 		SkipInitializeWithVersion:     config.GetValueBoolDefault("base.datasource.mysql.skip-initialize-with-version", false),
 		DefaultStringSize:             config.GetValueUIntDefault("base.datasource.mysql.default-string-size", 0),

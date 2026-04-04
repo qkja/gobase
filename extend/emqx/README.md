@@ -55,7 +55,7 @@ base:
 ```go
 import (
     mqtt "github.com/eclipse/paho.mqtt.golang"
-    "github.com/isyscore/isc-gobase/extend/emqx"
+    "github.com/qkja/gobase/extend/emqx"
  )
 
 // 消息回调函数

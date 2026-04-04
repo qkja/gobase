@@ -5,7 +5,7 @@
 package main
 
 import (
-    "github.com/isyscore/isc-gobase/logger"
+    "github.com/qkja/gobase/logger"
 )
 
 func main() {
@@ -55,7 +55,7 @@ base:
 package main
 
 import (
-    "github.com/isyscore/isc-gobase/logger"
+    "github.com/qkja/gobase/logger"
 )
 
 func main() {

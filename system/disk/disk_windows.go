@@ -6,10 +6,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
+
+	"github.com/qkja/gobase/system/common"
+	"golang.org/x/sys/windows"
 )
 
 var (

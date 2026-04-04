@@ -1,12 +1,13 @@
-![CI](https://github.com/isyscore/isc-gobase/actions/workflows/go.yml/badge.svg)
+![CI](https://github.com/qkja/gobase/actions/workflows/go.yml/badge.svg)
 
 # isc-gobase
 
-isc-gobase 框架是杭州指令集智能科技有限公司在java转go的实践中沉淀总结的一套至简化工具框架。遵从大道至简原则，让开发者在开发go的项目方面使用更简单
+isc-gobase 框架是杭州指令集智能科技有限公司在java转go的实践中沉淀总结的一套至简化工具框架。
+遵从大道至简原则，让开发者在开发go的项目方面使用更简单
 
 ## 下载
 ```shell
-go get github.com/isyscore/isc-gobase
+go get github.com/qkja/gobase
 ```
 提示：更新相关依赖
 ```shell
@@ -37,8 +38,8 @@ package main
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/isyscore/isc-gobase/server"
-    "github.com/isyscore/isc-gobase/server/rsp"
+    "github.com/qkja/gobase/server"
+    "github.com/qkja/gobase/server/rsp"
 )
 
 func main() {

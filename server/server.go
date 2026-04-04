@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/server/rsp"
-	"github.com/isyscore/isc-gobase/store"
 	"io"
 	"net/http"
 	"os"
@@ -14,20 +12,23 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/qkja/gobase/server/rsp"
+	"github.com/qkja/gobase/store"
+
 	"github.com/gin-contrib/pprof"
-	"github.com/isyscore/isc-gobase/bean"
-	"github.com/isyscore/isc-gobase/debug"
-	"github.com/isyscore/isc-gobase/listener"
+	"github.com/qkja/gobase/bean"
+	"github.com/qkja/gobase/debug"
+	"github.com/qkja/gobase/listener"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/isc"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/isc"
 
-	"github.com/isyscore/isc-gobase/logger"
+	"github.com/qkja/gobase/logger"
 
 	"github.com/gin-gonic/gin"
-	"github.com/isyscore/isc-gobase/websocket"
+	"github.com/qkja/gobase/websocket"
 )
 
 type HttpMethod int

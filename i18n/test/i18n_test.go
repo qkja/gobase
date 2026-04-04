@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	. "github.com/isyscore/isc-gobase/i18n"
+	. "github.com/qkja/gobase/i18n"
 )
 
 func TestI18N(t *testing.T) {

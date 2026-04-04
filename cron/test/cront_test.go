@@ -2,10 +2,11 @@ package test
 
 import (
 	"fmt"
-	cron2 "github.com/isyscore/isc-gobase/cron"
 	"sync"
 	"testing"
 	"time"
+
+	cron2 "github.com/qkja/gobase/cron"
 )
 
 // Many tests schedule a job for every second, and then wait at most a second
@@ -347,7 +348,7 @@ func TestJob(t *testing.T) {
 	wg.Add(1)
 
 	cron := cron2.New()
-	_ =cron.AddJob("0 0 0 30 Feb ?", testJob{wg, "job0"})
+	_ = cron.AddJob("0 0 0 30 Feb ?", testJob{wg, "job0"})
 	_ = cron.AddJob("0 0 0 1 1 ?", testJob{wg, "job1"})
 	_ = cron.AddJob("* * * * * ?", testJob{wg, "job2"})
 	_ = cron.AddJob("1 0 0 1 1 ?", testJob{wg, "job3"})

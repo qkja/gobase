@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync/atomic"
 
-	"github.com/isyscore/isc-gobase/time"
+	"github.com/qkja/gobase/time"
 )
 
 var seq uint64 = 0

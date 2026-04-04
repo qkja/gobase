@@ -2,7 +2,7 @@
 
 package cpu
 
-import "github.com/isyscore/isc-gobase/system/common"
+import "github.com/qkja/gobase/system/common"
 
 func perCPUTimes() ([]TimesStat, error) {
 	return []TimesStat{}, common.ErrNotImplementedError

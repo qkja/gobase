@@ -3,19 +3,20 @@ package logger
 import (
 	"bytes"
 	"fmt"
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/constants"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/listener"
-	"github.com/isyscore/isc-gobase/store"
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
 	"os"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
+
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/constants"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/listener"
+	"github.com/qkja/gobase/store"
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -45,7 +46,7 @@ func init() {
 	gColor = _gColor
 }
 
-func Group(groupNames... string) *logrus.Logger {
+func Group(groupNames ...string) *logrus.Logger {
 	var resultLogger *logrus.Logger
 	groupNamesOfUnContain := []string{}
 	for _, groupName := range groupNames {
@@ -58,7 +59,7 @@ func Group(groupNames... string) *logrus.Logger {
 
 	if resultLogger != nil {
 		return resultLogger
-	}  else {
+	} else {
 		resultLogger = logrus.New()
 		resultLogger.SetReportCaller(true)
 		formatters := &StandardFormatter{}

@@ -7,13 +7,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"golang.org/x/sys/unix"
 	"io"
 	"math"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/qkja/gobase/system/common"
+	"golang.org/x/sys/unix"
 )
 
 type VirtualMemoryExStat struct {

@@ -7,10 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"github.com/isyscore/isc-gobase/system/cpu"
-	"github.com/isyscore/isc-gobase/system/net"
-	"golang.org/x/sys/windows"
 	"io"
 	"os"
 	"reflect"
@@ -19,6 +15,11 @@ import (
 	"time"
 	"unicode/utf16"
 	"unsafe"
+
+	"github.com/qkja/gobase/system/common"
+	"github.com/qkja/gobase/system/cpu"
+	"github.com/qkja/gobase/system/net"
+	"golang.org/x/sys/windows"
 )
 
 var (

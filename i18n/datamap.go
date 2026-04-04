@@ -1,8 +1,8 @@
 package i18n
 
 import (
-	f0 "github.com/isyscore/isc-gobase/file"
-	"github.com/isyscore/isc-gobase/isc"
+	f0 "github.com/qkja/gobase/file"
+	"github.com/qkja/gobase/isc"
 )
 
 type I18NMap struct {

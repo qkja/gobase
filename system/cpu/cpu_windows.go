@@ -5,11 +5,12 @@ package cpu
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"github.com/yusufpapurcu/wmi"
-	"golang.org/x/sys/windows"
 	"strings"
 	"unsafe"
+
+	"github.com/qkja/gobase/system/common"
+	"github.com/yusufpapurcu/wmi"
+	"golang.org/x/sys/windows"
 )
 
 var (
@@ -196,8 +197,8 @@ func perfInfo() ([]win32_SystemProcessorPerformanceInformation, error) {
 	retCode, _, err := common.ProcNtQuerySystemInformation.Call(
 		win32_SystemProcessorPerformanceInformationClass, // System Information Class -> SystemProcessorPerformanceInformation
 		uintptr(unsafe.Pointer(&resultBuffer[0])),        // pointer to first element in result buffer
-		bufferSize,                                       // size of the buffer in memory
-		uintptr(unsafe.Pointer(&retSize)),                // pointer to the size of the returned results the windows proc will set this
+		bufferSize,                        // size of the buffer in memory
+		uintptr(unsafe.Pointer(&retSize)), // pointer to the size of the returned results the windows proc will set this
 	)
 
 	// check return code for errors

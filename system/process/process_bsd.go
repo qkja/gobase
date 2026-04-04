@@ -6,9 +6,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
-	"github.com/isyscore/isc-gobase/system/common"
-	"github.com/isyscore/isc-gobase/system/cpu"
-	"github.com/isyscore/isc-gobase/system/net"
+
+	"github.com/qkja/gobase/system/common"
+	"github.com/qkja/gobase/system/cpu"
+	"github.com/qkja/gobase/system/net"
 )
 
 type MemoryInfoExStat struct{}

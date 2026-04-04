@@ -3,11 +3,12 @@ package http
 import (
 	"context"
 	"fmt"
-	baseHttp "github.com/isyscore/isc-gobase/http"
-	"github.com/isyscore/isc-gobase/isc"
 	"net/http"
 	"testing"
 	"unsafe"
+
+	baseHttp "github.com/qkja/gobase/http"
+	"github.com/qkja/gobase/isc"
 )
 
 type DemoHttpHook struct {

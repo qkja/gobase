@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/isyscore/isc-gobase/isc"
-	. "github.com/isyscore/isc-gobase/isc"
+	"github.com/qkja/gobase/isc"
+	. "github.com/qkja/gobase/isc"
 )
 
 type ApiPath struct {

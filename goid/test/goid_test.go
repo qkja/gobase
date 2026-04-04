@@ -2,11 +2,12 @@ package test
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/goid"
-	"github.com/isyscore/isc-gobase/test"
-	"github.com/magiconair/properties/assert"
 	"testing"
 	"time"
+
+	"github.com/magiconair/properties/assert"
+	"github.com/qkja/gobase/goid"
+	"github.com/qkja/gobase/test"
 )
 
 func TestGoid(t *testing.T) {
@@ -91,7 +92,6 @@ func BenchmarkNativeGoid(b *testing.B) {
 	}
 }
 
-
 var h1 goid.LocalStorage
 var h2 goid.LocalStorage
 var h3 goid.LocalStorage
@@ -125,14 +125,14 @@ func TestGoidClean(t *testing.T) {
 	st.Set("vv")
 	goid.Go(func() {
 		fmt.Println("sleep")
-		time.Sleep(2*time.Second)
+		time.Sleep(2 * time.Second)
 		fmt.Println("wake")
 
 		fmt.Println(st.Get())
 	})
 	st.Del()
 	fmt.Println("clean")
-	time.Sleep(4*time.Second)
+	time.Sleep(4 * time.Second)
 	fmt.Println("end")
 }
 

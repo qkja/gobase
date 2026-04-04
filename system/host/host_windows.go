@@ -5,10 +5,6 @@ package host
 import (
 	"context"
 	"fmt"
-	"github.com/isyscore/isc-gobase/system/common"
-	"github.com/isyscore/isc-gobase/system/process"
-	"github.com/yusufpapurcu/wmi"
-	"golang.org/x/sys/windows"
 	"math"
 	"strconv"
 	"strings"
@@ -16,6 +12,11 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+
+	"github.com/qkja/gobase/system/common"
+	"github.com/qkja/gobase/system/process"
+	"github.com/yusufpapurcu/wmi"
+	"golang.org/x/sys/windows"
 )
 
 var (

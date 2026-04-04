@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/isyscore/isc-gobase/validate"
 	"testing"
 	"time"
+
+	"github.com/qkja/gobase/validate"
 )
 
 var (

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/listener"
-	"github.com/isyscore/isc-gobase/logger"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/listener"
+	"github.com/qkja/gobase/logger"
 	"github.com/sirupsen/logrus"
 )
 

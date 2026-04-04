@@ -1,8 +1,9 @@
 package rsp
 
 import (
-	"github.com/isyscore/isc-gobase/isc"
 	"net/http"
+
+	"github.com/qkja/gobase/isc"
 
 	"github.com/gin-gonic/gin"
 )

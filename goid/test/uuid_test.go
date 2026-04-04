@@ -1,8 +1,9 @@
 package test
 
 import (
-	"github.com/isyscore/isc-gobase/goid"
 	"testing"
+
+	"github.com/qkja/gobase/goid"
 )
 
 func TestUUID(t *testing.T) {

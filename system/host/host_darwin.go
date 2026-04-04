@@ -7,14 +7,15 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"github.com/isyscore/isc-gobase/system/common"
-	"github.com/isyscore/isc-gobase/system/process"
-	"golang.org/x/sys/unix"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
 	"unsafe"
+
+	"github.com/qkja/gobase/system/common"
+	"github.com/qkja/gobase/system/process"
+	"golang.org/x/sys/unix"
 )
 
 // USER_PROCESS from tmpl.h

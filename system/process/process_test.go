@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/isyscore/isc-gobase/system/common"
+	"github.com/qkja/gobase/system/common"
 )
 
 var mu sync.Mutex

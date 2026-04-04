@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	. "github.com/isyscore/isc-gobase/isc"
+	. "github.com/qkja/gobase/isc"
 )
 
 func TestNumber(t *testing.T) {

@@ -3,7 +3,8 @@ package disk
 import (
 	"context"
 	"encoding/json"
-	"github.com/isyscore/isc-gobase/system/common"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 var invoke common.Invoker = common.Invoke{}

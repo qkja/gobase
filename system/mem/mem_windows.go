@@ -4,11 +4,12 @@ package mem
 
 import (
 	"context"
-	"github.com/isyscore/isc-gobase/system/common"
-	"golang.org/x/sys/windows"
 	"sync"
 	"syscall"
 	"unsafe"
+
+	"github.com/qkja/gobase/system/common"
+	"golang.org/x/sys/windows"
 )
 
 var (

@@ -4,7 +4,8 @@ package disk
 
 import (
 	"context"
-	"github.com/isyscore/isc-gobase/system/common"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 func IOCountersWithContext(ctx context.Context, names ...string) (map[string]IOCountersStat, error) {

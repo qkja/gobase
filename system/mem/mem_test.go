@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/isyscore/isc-gobase/system/common"
+	"github.com/qkja/gobase/system/common"
 )
 
 func skipIfNotImplementedErr(t *testing.T, err error) {

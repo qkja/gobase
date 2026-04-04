@@ -6,12 +6,12 @@ Any object can be stored, for a given duration or forever, and the cache can be
 safely used by multiple goroutines.
 
 # Installation
-`go get go get github.com/isyscore/isc-gobase`
+`go get go get github.com/qkja/gobase`
 
 # Usage
 ```go
 import (
-	"github.com/isyscore/isc-gobase/cache"
+	"github.com/qkja/gobase/cache"
 )
 
 func main() {

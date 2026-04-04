@@ -6,7 +6,7 @@ import (
 
 	"github.com/antonmedv/expr/compiler"
 	"github.com/antonmedv/expr/parser"
-	"github.com/isyscore/isc-gobase/logger"
+	"github.com/qkja/gobase/logger"
 )
 
 type BlackWhiteMatch struct {

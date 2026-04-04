@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/logger"
 	gourl "net/url"
 
-	//"github.com/isyscore/isc-gobase/goid"
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/logger"
+
+	//"github.com/qkja/gobase/goid"
 	"io"
 	"log"
 	"net"

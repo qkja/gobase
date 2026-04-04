@@ -1,11 +1,12 @@
 package file
 
 import (
-	"github.com/isyscore/isc-gobase/isc"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/qkja/gobase/isc"
 )
 
 func FileExists(filePath string) bool {

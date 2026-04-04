@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/isyscore/isc-gobase/system/common"
+	"github.com/qkja/gobase/system/common"
 )
 
 func skipIfNotImplementedErr(t *testing.T, err error) {
@@ -65,7 +65,6 @@ func TestDisk_io_counters(t *testing.T) {
 		}
 	}
 }
-
 
 func TestDiskUsageStat_String(t *testing.T) {
 	v := UsageStat{

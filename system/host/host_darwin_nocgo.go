@@ -4,7 +4,8 @@ package host
 
 import (
 	"context"
-	"github.com/isyscore/isc-gobase/system/common"
+
+	"github.com/qkja/gobase/system/common"
 )
 
 func SensorsTemperaturesWithContext(ctx context.Context) ([]TemperatureStat, error) {

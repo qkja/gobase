@@ -2,12 +2,12 @@ package test
 
 import (
 	"fmt"
-	"github.com/isyscore/isc-gobase/listener"
-	"github.com/isyscore/isc-gobase/logger"
-	"github.com/magiconair/properties/assert"
 	"testing"
-)
 
+	"github.com/magiconair/properties/assert"
+	"github.com/qkja/gobase/listener"
+	"github.com/qkja/gobase/logger"
+)
 
 func Event1Lister1(event listener.BaseEvent) {
 	ev := event.(Event1)
@@ -124,4 +124,3 @@ func init() {
 func TestPublish3(t *testing.T) {
 	listener.PublishEvent(Event1{Company: "公司"})
 }
-

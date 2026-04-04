@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/isyscore/isc-gobase/isc"
+	"github.com/qkja/gobase/isc"
 )
 
 type DatabaseType int

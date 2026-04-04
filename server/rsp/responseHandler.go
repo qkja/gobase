@@ -3,16 +3,17 @@ package rsp
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/isyscore/isc-gobase/config"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 	"unsafe"
 
+	"github.com/qkja/gobase/config"
+
 	"github.com/gin-gonic/gin"
-	"github.com/isyscore/isc-gobase/isc"
-	"github.com/isyscore/isc-gobase/logger"
+	"github.com/qkja/gobase/isc"
+	"github.com/qkja/gobase/logger"
 )
 
 type bodyLogWriter struct {

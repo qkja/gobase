@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/isyscore/isc-gobase/system/common"
-	"github.com/isyscore/isc-gobase/system/cpu"
-	"github.com/isyscore/isc-gobase/system/mem"
-	"github.com/isyscore/isc-gobase/system/net"
+	"github.com/qkja/gobase/system/common"
+	"github.com/qkja/gobase/system/cpu"
+	"github.com/qkja/gobase/system/mem"
+	"github.com/qkja/gobase/system/net"
 )
 
 var (

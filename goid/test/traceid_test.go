@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/isyscore/isc-gobase/goid"
+	"github.com/qkja/gobase/goid"
 )
 
 func TestTraceId(t *testing.T) {
