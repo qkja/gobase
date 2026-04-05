@@ -152,16 +152,7 @@ func doGroup(groupName string) *logrus.Logger {
 }
 
 func InitLog() {
-	rootLogger = Group("root")
-	loggerDir := config.GetValueStringDefault("base.logger.home", "./logs/")
-	rootLogger.AddHook(lfshook.NewHook(lfshook.WriterMap{
-		logrus.DebugLevel: rotateLog(loggerDir, "debug"),
-		logrus.InfoLevel:  rotateLog(loggerDir, "info"),
-		logrus.WarnLevel:  rotateLog(loggerDir, "warn"),
-		logrus.ErrorLevel: rotateLog(loggerDir, "error"),
-		logrus.PanicLevel: rotateLog(loggerDir, "panic"),
-		logrus.FatalLevel: rotateLog(loggerDir, "fatal"),
-	}, &StandardFormatter{}))
+	// rootLogger already initialized in init, just update level and color
 	lgLevel, err := logrus.ParseLevel(config.GetValueStringDefault("base.logger.level", "info"))
 	if err != nil {
 		lgLevel = logrus.InfoLevel
@@ -259,19 +250,19 @@ func Fatal(format string, v ...any) {
 func Record(level, format string, v ...any) {
 	switch strings.ToLower(level) {
 	case "debug":
-		Debug(format, v)
+		Debug(format, v...)
 	case "info":
-		Info(format, v)
+		Info(format, v...)
 	case "warn":
-		Warn(format, v)
+		Warn(format, v...)
 	case "error":
-		Error(format, v)
+		Error(format, v...)
 	case "panic":
-		Panic(format, v)
+		Panic(format, v...)
 	case "fatal":
-		Fatal(format, v)
+		Fatal(format, v...)
 	default:
-		Debug(format, v)
+		Debug(format, v...)
 	}
 }
 
@@ -366,7 +357,7 @@ func (m *StandardFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			timestamp,
 			black,
 			os.Getenv("HOSTNAME"),
-			config.GetValueStringDefault("base.application.name", "isc-gobase"),
+			config.GetValueStringDefault("base.application.name", "gobase"),
 			store.Get(constants.TRACE_HEAD_ID), store.Get(constants.TRACE_HEAD_USER_ID),
 			levelColor,
 			strings.ToUpper(entry.Level.String()),
@@ -378,7 +369,7 @@ func (m *StandardFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		newLog = fmt.Sprintf("[%s] %s [%s] [%s] [%v] %s %s %s %s\n",
 			timestamp,
 			os.Getenv("HOSTNAME"),
-			config.GetValueStringDefault("base.application.name", "isc-gobase"),
+			config.GetValueStringDefault("base.application.name", "gobase"),
 			store.Get(constants.TRACE_HEAD_ID), store.Get(constants.TRACE_HEAD_USER_ID),
 			strings.ToUpper(entry.Level.String()),
 			funPath,

@@ -11,6 +11,7 @@ import (
 	"github.com/qkja/gobase/logger"
 )
 
+// TestGorm1
 func TestGorm1(t *testing.T) {
 	config.LoadYamlFile("./application-test1.yaml")
 	//orm2.AddGormHook(&GobaseOrmHookDemo{})
