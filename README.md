@@ -62,6 +62,7 @@ root@user ~> curl http://localhost:8080/api/get
 | --------   | :----: |
 | [isc](/isc)| 基础工具（更新中）|
 | [config](/config)| 配置文件管理|
+| [errors](/errors)| gRPC 统一业务错误码 |
 | [validate](/validate)|校验核查 |
 | [logger](/logger)| 日志 |
 | [database](/database)|数据库处理（待更新） |

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -34,6 +35,9 @@ var gColor = false
 var loggerMap map[string]*logrus.Logger
 var rotateMap map[string]*rotatelogs.RotateLogs
 var rootLogger *logrus.Logger
+var tenantDebugLogger *logrus.Logger
+var debugTenantIDs []string
+var debugTenantLoaded = false
 
 func init() {
 	_loggerMap := map[string]*logrus.Logger{}
@@ -41,9 +45,48 @@ func init() {
 	_rotateMap := map[string]*rotatelogs.RotateLogs{}
 	rotateMap = _rotateMap
 	rootLogger = Group("root")
+	// 租户级 debug 专用 logger：始终 Debug 级别，由 DebugWithTenant 的租户检查控制输出
+	tenantDebugLogger = Group("tenant_debug")
+	tenantDebugLogger.SetLevel(logrus.DebugLevel)
 
 	_gColor := config.GetValueBoolDefault("base.logger.color.enable", false)
 	gColor = _gColor
+}
+
+// reloadDebugTenants 读取配置 base.logger.debug_tenant_ids
+func reloadDebugTenants() {
+	arr := config.GetValueArray("base.logger.debug_tenant_ids")
+	debugTenantIDs = make([]string, 0, len(arr))
+	for _, v := range arr {
+		if s, ok := v.(string); ok && s != "" {
+			debugTenantIDs = append(debugTenantIDs, s)
+		}
+	}
+	debugTenantLoaded = true
+}
+
+// debugTenants 懒加载获取 debug 租户列表
+// 配置文件可能在 logger 包 init 之后才加载，故首次使用时再读取
+func debugTenants() []string {
+	if !debugTenantLoaded {
+		reloadDebugTenants()
+	}
+	return debugTenantIDs
+}
+
+// debugTenantEnabled 判断指定租户是否开启 debug
+// 满足任一条件：
+//  1. 全局级别为 debug/trace
+//  2. tenantID 在 base.logger.debug_tenant_ids 列表中
+func debugTenantEnabled(tenantID string) bool {
+	// 全局 debug：级别为 debug/trace 时（数值 >= DebugLevel）
+	if rootLogger.IsLevelEnabled(logrus.DebugLevel) {
+		return true
+	}
+	if tenantID == "" {
+		return false
+	}
+	return slices.Contains(debugTenants(), tenantID)
 }
 
 func Group(groupNames ...string) *logrus.Logger {
@@ -169,6 +212,8 @@ func ConfigChangeListener(event listener.BaseEvent) {
 	ev := event.(listener.ConfigChangeEvent)
 	if ev.Key == "base.logger.level" {
 		SetGlobalLevel(ev.Value)
+	} else if ev.Key == "base.logger.debug_tenant_ids" {
+		reloadDebugTenants()
 	} else if strings.HasPrefix(ev.Key, "base.logger.group") {
 		words := strings.Split(ev.Key, ".")
 		if len(words) != 5 {
@@ -233,6 +278,19 @@ func Error(format string, v ...any) {
 
 func Debug(format string, v ...any) {
 	rootLogger.Debugf(format, v...)
+}
+
+// DebugWithTenant 按租户控制 debug 日志
+// 自动在消息前注入租户标识 [TenantId:xxx]，调用方无需重复传租户
+// 仅当全局 debug 开启，或 tenantID 在 base.logger.debug_tenant_ids 列表中时输出
+func DebugWithTenant(tenantID, format string, v ...any) {
+	// 未开启 debug 时直接返回，避免格式化开销
+	if !debugTenantEnabled(tenantID) {
+		return
+	}
+	// 用独立 debug logger 输出，绕开 rootLogger 的 info 级别过滤
+	args := append([]any{tenantID}, v...)
+	tenantDebugLogger.Debugf("[TenantId:%s] "+format, args...)
 }
 
 func Trace(format string, v ...any) {

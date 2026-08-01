@@ -74,6 +74,8 @@ func AppendConfigFromRelativePath(fileName string) {
 		AppendPropertyFile(fileName)
 	case "json":
 		AppendJsonFile(fileName)
+	case "toml":
+		AppendTomlFile(fileName)
 	}
 }
 
@@ -89,6 +91,8 @@ func AppendConfigFromAbsPath(fileName string) {
 		AppendPropertyFile(fileName)
 	case "json":
 		AppendJsonFile(fileName)
+	case "toml":
+		AppendTomlFile(fileName)
 	}
 }
 
@@ -172,6 +176,7 @@ func doLoadConfigFromAbsPath(resourceAbsPath string) {
 	LoadYamlFile(resourceAbsPath + "application.yml")
 	LoadPropertyFile(resourceAbsPath + "application.properties")
 	LoadJsonFile(resourceAbsPath + "application.json")
+	LoadTomlFile(resourceAbsPath + "application.toml")
 
 	for _, fileInfo := range files {
 		if fileInfo.IsDir() {
@@ -194,6 +199,9 @@ func doLoadConfigFromAbsPath(resourceAbsPath string) {
 			configExist = true
 			break
 		} else if fileName == "application.json" {
+			configExist = true
+			break
+		} else if fileName == "application.toml" {
 			configExist = true
 			break
 		}
@@ -240,6 +248,8 @@ func AppendFile(filePath string) {
 		AppendPropertyFile(filePath)
 	} else if extend == "json" {
 		AppendJsonFile(filePath)
+	} else if extend == "toml" {
+		AppendTomlFile(filePath)
 	}
 }
 
@@ -458,6 +468,60 @@ func AppendJsonFile(filePath string) {
 		return
 	}
 
+	AppendValue(property)
+}
+
+func LoadTomlFile(filePath string) {
+	if !file.FileExists(filePath) {
+		return
+	}
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return
+	}
+
+	if appProperty == nil {
+		appProperty = &ApplicationProperty{}
+		appProperty.ValueMap = make(map[string]interface{})
+		appProperty.ValueDeepMap = make(map[string]interface{})
+	} else if appProperty.ValueMap == nil {
+		appProperty.ValueMap = make(map[string]interface{})
+	} else if appProperty.ValueDeepMap == nil {
+		appProperty.ValueDeepMap = make(map[string]interface{})
+	}
+
+	tomlMap, _ := isc.TomlToMap(string(content))
+	property, _ := isc.TomlToProperties(string(content))
+	valueMap, _ := isc.PropertiesToMap(property)
+	appProperty.ValueMap = valueMap
+
+	appProperty.ValueDeepMap = tomlMap
+}
+
+func AppendTomlFile(filePath string) {
+	if !file.FileExists(filePath) {
+		return
+	}
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Printf("读取文件失败(%v)", err)
+		return
+	}
+
+	if appProperty == nil {
+		appProperty = &ApplicationProperty{}
+		appProperty.ValueMap = make(map[string]interface{})
+		appProperty.ValueDeepMap = make(map[string]interface{})
+	} else if appProperty.ValueMap == nil {
+		appProperty.ValueMap = make(map[string]interface{})
+	} else if appProperty.ValueDeepMap == nil {
+		appProperty.ValueDeepMap = make(map[string]interface{})
+	}
+
+	property, err := isc.TomlToProperties(string(content))
+	if err != nil {
+		return
+	}
 	AppendValue(property)
 }
 

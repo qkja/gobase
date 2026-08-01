@@ -624,6 +624,9 @@ func doInvokeValue(fieldMapValue reflect.Value, field reflect.StructField, field
 	} else if v, exist := getValueFromMapValue(fieldMapValue, field.Tag.Get("yaml")); exist {
 		// 兼容标签：yaml
 		fValue = v
+	} else if v, exist := getValueFromMapValue(fieldMapValue, field.Tag.Get("toml")); exist {
+		// 兼容标签：toml
+		fValue = v
 	} else if v, exist := getValueFromMapValue(fieldMapValue, field.Tag.Get("json")); exist {
 		// 兼容标签：json
 		fValue = v
