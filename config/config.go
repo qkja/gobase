@@ -526,6 +526,16 @@ func AppendTomlFile(filePath string) {
 }
 
 func AppendValue(propertiesNewValue string) {
+	if appProperty == nil {
+		appProperty = &ApplicationProperty{}
+		appProperty.ValueMap = make(map[string]interface{})
+		appProperty.ValueDeepMap = make(map[string]interface{})
+	} else if appProperty.ValueMap == nil {
+		appProperty.ValueMap = make(map[string]interface{})
+	} else if appProperty.ValueDeepMap == nil {
+		appProperty.ValueDeepMap = make(map[string]interface{})
+	}
+
 	pMap, err := isc.PropertiesToMap(propertiesNewValue)
 	for k, v := range pMap {
 		appProperty.ValueMap[k] = v
@@ -574,7 +584,12 @@ func SetValue(key string, value any) {
 	}
 	resultMap, err := isc.PropertiesToMap(propertiesValueOfOriginal)
 	if err != nil {
-		return
+		// 空 deepmap：MapToProperties 产出空串，PropertiesToMap 因缺 "=" 报错，从空 map 开始即可
+		if strings.TrimSpace(propertiesValueOfOriginal) == "" {
+			resultMap = make(map[string]any)
+		} else {
+			return
+		}
 	}
 
 	resultMap, err = parseProperties(key, value, resultMap)

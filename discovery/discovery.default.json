@@ -1,0 +1,3 @@
+{
+  "identityhubsvr": "identityhubsvr.{namespace}.svc.cluster.local:9090"
+}

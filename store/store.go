@@ -36,7 +36,7 @@ func Put(key string, value any) {
 	headKvMap := headKeyValueStorage.Get()
 
 	if headKvMap == nil {
-		headKvMap = map[string]any{}
+		headKvMap = cmap.New()
 	}
 	kvMap := headKvMap.(cmap.ConcurrentMap)
 	kvMap.Set(key, value)

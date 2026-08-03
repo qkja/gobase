@@ -22,3 +22,11 @@ const (
 	SAVE_HEAD        = "head"
 	SAVE_REMOTE_ADDR = "remote_addr"
 )
+
+// 租户上下文请求头：网关入口（或上游调用方）通过这三个头下发租户信息，
+// 各服务经 middleware 读取后写入 ctx（tenant.WithInfo），再注入 proto Req。
+const (
+	TENANT_HEAD_ID          = "t-head-tenantId"
+	TENANT_HEAD_LANGUAGE    = "t-head-tenantLanguage"
+	TENANT_HEAD_UI_LANGUAGE = "t-head-tenantUILanguage"
+)

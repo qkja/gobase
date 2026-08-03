@@ -210,11 +210,12 @@ func InitLog() {
 
 func ConfigChangeListener(event listener.BaseEvent) {
 	ev := event.(listener.ConfigChangeEvent)
-	if ev.Key == "base.logger.level" {
+	switch {
+	case ev.Key == "base.logger.level":
 		SetGlobalLevel(ev.Value)
-	} else if ev.Key == "base.logger.debug_tenant_ids" {
+	case ev.Key == "base.logger.debug_tenant_ids":
 		reloadDebugTenants()
-	} else if strings.HasPrefix(ev.Key, "base.logger.group") {
+	case strings.HasPrefix(ev.Key, "base.logger.group"):
 		words := strings.Split(ev.Key, ".")
 		if len(words) != 5 {
 			return
@@ -226,6 +227,32 @@ func ConfigChangeListener(event listener.BaseEvent) {
 			return
 		}
 		Group(_group).SetLevel(le)
+	case ev.Key == "appconfig.reload":
+		// 泛型 Config[T] 热加载路径：整文件重载时只补发 appconfig.reload 合成事件（见 config/watch.go），
+		// 不产生逐 key 事件。这里重读配置并应用到已创建的 root/group logger，实现级别热更新。
+		applyLevelFromConfig()
+	}
+}
+
+// applyLevelFromConfig 热加载后重读 base.logger.* 配置，应用到已创建的 logger。
+// 只更新已存在的分组，不创建新分组（新分组首次 Group() 时自行读配置）。
+func applyLevelFromConfig() {
+	rootLevel := config.GetValueStringDefault("base.logger.level", "info")
+	if le, err := logrus.ParseLevel(rootLevel); err == nil {
+		rootLogger.SetLevel(le)
+	}
+	reloadDebugTenants()
+	for groupName := range loggerMap {
+		if groupName == "root" || groupName == "tenant_debug" {
+			continue
+		}
+		lvl := config.GetValueString("base.logger.group." + groupName + ".level")
+		if lvl == "" {
+			lvl = rootLevel
+		}
+		if le, err := logrus.ParseLevel(lvl); err == nil {
+			loggerMap[groupName].SetLevel(le)
+		}
 	}
 }
 
