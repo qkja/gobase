@@ -75,7 +75,7 @@ go test ./errors -run TestRegistryContainsAllConsts
 ### 业务错误（`errors/` 与 `server/rsp` 是两层，别混淆）
 
 - **`errors/`** 面向 gRPC 业务错误。`BizError`（实现 `error` + `GRPCStatus()`）可直接在 gRPC handler 里 `return nil, errors.ErrXxx()`；业务码通过 `errdetails.ErrorInfo` 跨进程传递。`errors.FromError(err)` 能从任意 error 中提取业务码（进程内 `BizError`、`%w` 包装链、或跨进程 `ErrorInfo`）。
-- **码段划分：** `0` 成功，`1001–1999` 通用（本包定义），`2000+` 业务段由业务模块在 `init` 阶段 `errors.Register(code, msgZh, msgEn, grpcCode)` 注册。注册表是 `map[string]errorMeta`（而非 switch），支撑码→（中英消息、grpc 码）反查和 `Message(code, lang)` 双语回退。
+- **码段划分：** `0` 成功，`1001–1999` 通用（本包定义），`2000+` 业务段由业务模块在 `init` 阶段 `errors.Register(code, msgZh, msgEn, grpcCode)` 注册。注册表是 `map[string]errorMeta`（而非 switch），支撑码→grpc 码反查。**消息文案由 `i18n` 唯一提供**：`Message(code, lang)` 走 `i18n.Lookup` —— gobase 内嵌 `i18n/default/{zh-CN,en-US}.po`（含全部框架码翻译），服务可在自己的 `i18n/<lang>.po` 按 **code 键**覆盖/补充（格式每行 `code 文案`）；`Register` 的 `msgZh`/`msgEn` 参数已弃用、被忽略。未配置文案的码兜底为「未知错误」。
 - **不要用 `fmt.Errorf("%w")` 包装要返回给 gRPC 的 `BizError`** —— grpc v1.41.0 的 `status.FromError` 只做顶层类型断言，`%w` 包装会识别不到业务码；改用 `errors.ErrXxx().WithCause(err)`（见 `errors/grpc.go` 注释）。
 - **`server/rsp`** 是另一套 HTTP 响应层，用 **int** 码和 `{"code":0,...}` 信封，与上面无关。
 
@@ -91,6 +91,6 @@ go test ./errors -run TestRegistryContainsAllConsts
 
 - **`isc` 优先：** 任何字符串/类型/map/JSON 转换先查 `isc` 再看标准库。跨包代码依赖 `isc.ToString`/`ObjectToJson`/`DataToObject`/`YamlToProperties`。
 - **框架配置键都是顶层键**（`server.enable`、`logger.level`、`endpoint.*`）；`api-module` 是顶层键，控制 URL 模块段。
-- **中文注释与消息是常态**；注册表中的默认错误消息保持中英双语（zh + en）。
+- **中文注释与消息是常态**；框架错误码消息内嵌在 `i18n/default/`（`zh-CN.po`/`en-US.po`），服务自注册业务码须在自己 `i18n/` 目录按 code 键配翻译（例：`5001 租户不存在`），否则 `errors.Message` 回退「未知错误」。
 - **请求作用域结束必须 `store.Clean()`**；server 中间件会做，但其它填充 `store` 的地方也要记得。
 - 配置结构体绑定（`GetValueObject`）是快照——需要响应热加载的场景不要用它，改用实时 getter 或监听配置变更事件。

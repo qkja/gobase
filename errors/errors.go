@@ -3,6 +3,7 @@ package errors
 import (
 	"fmt"
 
+	"github.com/qkja/gobase/i18n"
 	"google.golang.org/grpc/codes"
 )
 
@@ -19,14 +20,14 @@ type BizError struct {
 	cause    error          // 原始错误（可选，支持 Unwrap 包装链）
 }
 
-// New 创建业务错误，默认消息与 gRPC 映射取自注册表。
+// New 创建业务错误，gRPC 映射取自注册表，默认消息（中文）由 i18n 提供。
 // code 未注册时降级为 codes.Unknown，便于业务段位先行使用。
 func New(code string) *BizError {
 	m, ok := registry[code]
 	if !ok {
 		return &BizError{Code: code, GRPCCode: codes.Unknown}
 	}
-	return &BizError{Code: code, Message: m.msgZh, GRPCCode: m.grpc}
+	return &BizError{Code: code, Message: Message(code, LangZh), GRPCCode: m.grpc}
 }
 
 // Newf 创建业务错误并格式化消息
@@ -136,22 +137,14 @@ func (e *BizError) message() string {
 }
 
 // Message 返回错误码 code 在指定语言下的默认消息。
-// lang 取 LangZh / LangEn；未注册的 code 兜底为"未知错误"；
-// 翻译双向回退：中文缺失时用英文，英文缺失时用中文。
+// 消息由 i18n 唯一提供（嵌入默认 + 服务 i18n/<lang>.po 按 code 键覆盖）；
+// lang 取 LangZh / LangEn；未配置的 code 兜底为"未知错误"（CodeUnknown）。
 func Message(code, lang string) string {
-	m, ok := registry[code]
-	if !ok {
-		m = registry[CodeUnknown] // 兜底为未知错误
+	if s, ok := i18n.Lookup(lang, code); ok {
+		return s
 	}
-	if lang == LangEn {
-		if m.msgEn != "" {
-			return m.msgEn
-		}
-		return m.msgZh
+	if s, ok := i18n.Lookup(lang, CodeUnknown); ok {
+		return s
 	}
-	// 中文或其他语言：优先中文，缺失回退英文
-	if m.msgZh != "" {
-		return m.msgZh
-	}
-	return m.msgEn
+	return code
 }

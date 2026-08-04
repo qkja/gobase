@@ -1,0 +1,47 @@
+0 Success
+1001 Internal error
+1002 Invalid argument
+1003 Resource not found
+1004 Unauthenticated
+1005 Permission denied
+1006 Request timeout
+1007 Resource already exists
+1008 Conflict
+1009 Too many requests
+1999 Unknown error
+2001 Directory not found
+2002 Domain already exists
+2003 Directory already disabled
+2004 Directory already enabled
+2005 Directory not empty
+2006 Directory disabled
+2007 Create directory failed
+2008 Update directory failed
+2009 Get directory failed
+2010 Delete directory failed
+3001 Organization not found
+3002 Create organization failed
+3003 Parent organization not found
+3004 Cyclic reference
+3005 Has children, cannot delete
+3006 Has users, cannot delete
+3007 Cross directory operation
+3008 Level limit exceeded
+3009 Update organization failed
+3010 Get organization failed
+3011 Delete organization failed
+3012 Move organization failed
+4001 User not found
+4002 Username already exists
+4003 User already disabled
+4004 User already enabled
+4005 Organization already secondary
+4006 Organization is primary
+4007 Organization not secondary
+4008 Primary organization not found
+4009 Create user failed
+4010 Update user failed
+4011 Get user failed
+4012 Delete user failed
+4013 Enable user failed
+4014 Disable user failed

@@ -56,19 +56,23 @@ func TestNewUnregistered(t *testing.T) {
 	}
 }
 
-// TestRegister 业务段位扩展
+// TestRegister 业务段位扩展（i18n 唯一来源）
 func TestRegister(t *testing.T) {
-	Register("2001", "目录域不存在", "Directory not found", codes.NotFound)
-	be := New("2001")
-	if be.Message != "目录域不存在" {
-		t.Errorf("Register 后 Message = %q, want 目录域不存在", be.Message)
+	// Register 仅登记 grpc 映射，msgZh/msgEn 被忽略；消息由 i18n（嵌入默认 / 服务 po）提供。
+	Register("2001", "被忽略的中文", "Ignored English", codes.NotFound)
+	// 2001 是框架码，嵌入 zh po 有文案 → 消息仍来自 i18n 而非 Register 参数
+	if got := New("2001").Message; got != "目录域不存在" {
+		t.Errorf("New(2001).Message = %q, want 目录域不存在（来自嵌入 i18n）", got)
 	}
-	if be.GRPCCode != codes.NotFound {
-		t.Errorf("Register 后 GRPCCode = %v, want NotFound", be.GRPCCode)
+	if got := New("2001").GRPCCode; got != codes.NotFound {
+		t.Errorf("New(2001).GRPCCode = %v, want NotFound", got)
 	}
-	if got := Message("2001", LangEn); got != "Directory not found" {
-		t.Errorf("Register 后英文 Message = %q, want Directory not found", got)
+	// 未配置 i18n 的自定义码 → 兜底"未知错误"
+	Register("5999", "ignored", "ignored", codes.NotFound)
+	if got := Message("5999", LangZh); got != "未知错误" {
+		t.Errorf("Message(5999, zh) = %q, want 未知错误", got)
 	}
+	delete(registry, "5999")
 }
 
 // TestMessageBilingual 验证 Message 中英双语与回退
@@ -109,26 +113,17 @@ func TestMessageBilingual(t *testing.T) {
 	}
 }
 
-// TestMessageFallback 验证双向回退：中文缺失用英文，英文缺失用中文
+// TestMessageFallback 验证 i18n 回退语义：未知语言→默认中文；未配置 i18n 的码→兜底"未知错误"
 func TestMessageFallback(t *testing.T) {
-	// 注册一个只有英文、没有中文的业务码
-	registry["7101"] = errorMeta{msgEn: "Only English", grpc: codes.NotFound}
-	// 中文缺失 → 回退英文
-	if got := Message("7101", LangZh); got != "Only English" {
-		t.Errorf("中文缺失应回退英文, got %q", got)
+	// 未知语言 → 回退默认语言(zh-CN)
+	if got := Message(CodeInternal, "fr-FR"); got != "系统内部错误" {
+		t.Errorf("未知语言应回退默认中文, got %q", got)
 	}
-	// 英文存在 → 正常返回英文
-	if got := Message("7101", LangEn); got != "Only English" {
-		t.Errorf("英文 Message = %q, want Only English", got)
+	// 未配置 i18n 的码 → 按语言兜底"未知错误"
+	if got := Message("5999", LangZh); got != "未知错误" {
+		t.Errorf("未配置码中文 = %q, want 未知错误", got)
 	}
-	// 清理，避免影响其他测试
-	delete(registry, "7101")
-
-	// 注册一个只有中文、没有英文的业务码
-	registry["7102"] = errorMeta{msgZh: "只有中文", grpc: codes.NotFound}
-	// 英文缺失 → 回退中文
-	if got := Message("7102", LangEn); got != "只有中文" {
-		t.Errorf("英文缺失应回退中文, got %q", got)
+	if got := Message("5999", LangEn); got != "Unknown error" {
+		t.Errorf("未配置码英文 = %q, want Unknown error", got)
 	}
-	delete(registry, "7102")
 }

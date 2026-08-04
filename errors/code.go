@@ -132,76 +132,78 @@ const (
 	CodeUserDisableFailed = "4014"
 )
 
-// errorMeta 错误码元数据：中英文默认消息 + 对应的 gRPC 状态码
+// errorMeta 错误码元数据：对应的 gRPC 状态码。
+// 消息文案不再在此存储——由 i18n 唯一提供（嵌入默认 + 服务 i18n/<lang>.po 按 code 键覆盖），见 i18n 包。
 type errorMeta struct {
-	msgZh string
-	msgEn string
-	grpc  codes.Code
+	grpc codes.Code
 }
 
-// registry 错误码注册表：code -> 元数据
+// registry 错误码注册表：code -> gRPC 映射
 //
 // 用 map 而非 switch，理由：
 //  1. FromError 需要「字符串 -> 元数据」的反查，map 天然支持；
 //  2. 业务段位可通过 Register 在 init 阶段扩展，switch 必须改本包源码；
 //  3. 本表仅 init 阶段填充、之后只读，无并发问题。
 var registry = map[string]errorMeta{
-	CodeOK:                {msgZh: "成功",        msgEn: "Success",      grpc: codes.OK},
-	CodeInternal:          {msgZh: "系统内部错误", msgEn: "Internal error", grpc: codes.Internal},
-	CodeInvalidArgument:   {msgZh: "参数无效",     msgEn: "Invalid argument", grpc: codes.InvalidArgument},
-	CodeNotFound:          {msgZh: "资源不存在",   msgEn: "Resource not found", grpc: codes.NotFound},
-	CodeUnauthenticated:   {msgZh: "未认证或登录已过期", msgEn: "Unauthenticated", grpc: codes.Unauthenticated},
-	CodePermissionDenied:  {msgZh: "无权限",       msgEn: "Permission denied", grpc: codes.PermissionDenied},
-	CodeTimeout:           {msgZh: "请求超时",     msgEn: "Request timeout", grpc: codes.DeadlineExceeded},
-	CodeAlreadyExists:     {msgZh: "资源已存在",   msgEn: "Resource already exists", grpc: codes.AlreadyExists},
-	CodeConflict:          {msgZh: "依赖冲突",     msgEn: "Conflict", grpc: codes.FailedPrecondition},
-	CodeResourceExhausted: {msgZh: "请求过于频繁", msgEn: "Too many requests", grpc: codes.ResourceExhausted},
-	CodeUnknown:           {msgZh: "未知错误",     msgEn: "Unknown error", grpc: codes.Unknown},
+	CodeOK:                {grpc: codes.OK},
+	CodeInternal:          {grpc: codes.Internal},
+	CodeInvalidArgument:   {grpc: codes.InvalidArgument},
+	CodeNotFound:          {grpc: codes.NotFound},
+	CodeUnauthenticated:   {grpc: codes.Unauthenticated},
+	CodePermissionDenied:  {grpc: codes.PermissionDenied},
+	CodeTimeout:           {grpc: codes.DeadlineExceeded},
+	CodeAlreadyExists:     {grpc: codes.AlreadyExists},
+	CodeConflict:          {grpc: codes.FailedPrecondition},
+	CodeResourceExhausted: {grpc: codes.ResourceExhausted},
+	CodeUnknown:           {grpc: codes.Unknown},
 	// 目录域（2000-2999）
-	CodeDirNotFound:        {msgZh: "目录域不存在",   msgEn: "Directory not found", grpc: codes.NotFound},
-	CodeDirDomainExists:    {msgZh: "业务域标识已存在", msgEn: "Domain already exists", grpc: codes.AlreadyExists},
-	CodeDirAlreadyDisabled: {msgZh: "目录域已是禁用状态", msgEn: "Directory already disabled", grpc: codes.FailedPrecondition},
-	CodeDirAlreadyEnabled:  {msgZh: "目录域已是启用状态", msgEn: "Directory already enabled", grpc: codes.FailedPrecondition},
-	CodeDirNotEmpty:        {msgZh: "目录域非空，无法删除", msgEn: "Directory not empty", grpc: codes.FailedPrecondition},
-	CodeDirDisabled:        {msgZh: "目录域已禁用",   msgEn: "Directory disabled", grpc: codes.FailedPrecondition},
-	CodeDirCreateFailed:    {msgZh: "新增目录域失败", msgEn: "Create directory failed", grpc: codes.Internal},
-	CodeDirUpdateFailed:    {msgZh: "编辑目录域失败", msgEn: "Update directory failed", grpc: codes.Internal},
-	CodeDirGetFailed:       {msgZh: "查询目录域失败", msgEn: "Get directory failed", grpc: codes.Internal},
-	CodeDirDeleteFailed:    {msgZh: "删除目录域失败", msgEn: "Delete directory failed", grpc: codes.Internal},
+	CodeDirNotFound:        {grpc: codes.NotFound},
+	CodeDirDomainExists:    {grpc: codes.AlreadyExists},
+	CodeDirAlreadyDisabled: {grpc: codes.FailedPrecondition},
+	CodeDirAlreadyEnabled:  {grpc: codes.FailedPrecondition},
+	CodeDirNotEmpty:        {grpc: codes.FailedPrecondition},
+	CodeDirDisabled:        {grpc: codes.FailedPrecondition},
+	CodeDirCreateFailed:    {grpc: codes.Internal},
+	CodeDirUpdateFailed:    {grpc: codes.Internal},
+	CodeDirGetFailed:       {grpc: codes.Internal},
+	CodeDirDeleteFailed:    {grpc: codes.Internal},
 	// 组织架构（3000-3999）
-	CodeOrgNotFound:        {msgZh: "组织不存在",     msgEn: "Organization not found", grpc: codes.NotFound},
-	CodeOrgCreateFailed:    {msgZh: "新增组织失败",   msgEn: "Create organization failed", grpc: codes.Internal},
-	CodeOrgParentNotFound:  {msgZh: "父组织不存在",   msgEn: "Parent organization not found", grpc: codes.NotFound},
-	CodeOrgCycle:           {msgZh: "存在循环引用",   msgEn: "Cyclic reference", grpc: codes.FailedPrecondition},
-	CodeOrgHasChildren:     {msgZh: "有子组织，无法删除", msgEn: "Has children, cannot delete", grpc: codes.FailedPrecondition},
-	CodeOrgHasUsers:        {msgZh: "有关联用户，无法删除", msgEn: "Has users, cannot delete", grpc: codes.FailedPrecondition},
-	CodeOrgCrossDirectory:  {msgZh: "跨目录域操作",   msgEn: "Cross directory operation", grpc: codes.FailedPrecondition},
-	CodeOrgLevelExceeded:   {msgZh: "超过层级限制",   msgEn: "Level limit exceeded", grpc: codes.FailedPrecondition},
-	CodeOrgUpdateFailed:    {msgZh: "编辑组织失败",   msgEn: "Update organization failed", grpc: codes.Internal},
-	CodeOrgGetFailed:       {msgZh: "查询组织失败",   msgEn: "Get organization failed", grpc: codes.Internal},
-	CodeOrgDeleteFailed:    {msgZh: "删除组织失败",   msgEn: "Delete organization failed", grpc: codes.Internal},
-	CodeOrgMoveFailed:      {msgZh: "移动组织失败",   msgEn: "Move organization failed", grpc: codes.Internal},
+	CodeOrgNotFound:        {grpc: codes.NotFound},
+	CodeOrgCreateFailed:    {grpc: codes.Internal},
+	CodeOrgParentNotFound:  {grpc: codes.NotFound},
+	CodeOrgCycle:           {grpc: codes.FailedPrecondition},
+	CodeOrgHasChildren:     {grpc: codes.FailedPrecondition},
+	CodeOrgHasUsers:        {grpc: codes.FailedPrecondition},
+	CodeOrgCrossDirectory:  {grpc: codes.FailedPrecondition},
+	CodeOrgLevelExceeded:   {grpc: codes.FailedPrecondition},
+	CodeOrgUpdateFailed:    {grpc: codes.Internal},
+	CodeOrgGetFailed:       {grpc: codes.Internal},
+	CodeOrgDeleteFailed:    {grpc: codes.Internal},
+	CodeOrgMoveFailed:      {grpc: codes.Internal},
 	// 用户（4000-4999）
-	CodeUserNotFound:            {msgZh: "用户不存在",     msgEn: "User not found", grpc: codes.NotFound},
-	CodeUserUsernameExists:      {msgZh: "用户名已存在",   msgEn: "Username already exists", grpc: codes.AlreadyExists},
-	CodeUserAlreadyDisabled:     {msgZh: "用户已是禁用状态", msgEn: "User already disabled", grpc: codes.FailedPrecondition},
-	CodeUserAlreadyEnabled:      {msgZh: "用户已是启用状态", msgEn: "User already enabled", grpc: codes.FailedPrecondition},
-	CodeUserOrgAlreadySecondary: {msgZh: "组织已是副组织",   msgEn: "Organization already secondary", grpc: codes.FailedPrecondition},
-	CodeUserOrgIsPrimary:        {msgZh: "组织是主组织",     msgEn: "Organization is primary", grpc: codes.FailedPrecondition},
-	CodeUserOrgNotSecondary:     {msgZh: "组织不是副组织",   msgEn: "Organization not secondary", grpc: codes.FailedPrecondition},
-	CodeUserPrimaryOrgNotFound:  {msgZh: "主组织不存在",   msgEn: "Primary organization not found", grpc: codes.NotFound},
-	CodeUserCreateFailed:        {msgZh: "新增用户失败",   msgEn: "Create user failed", grpc: codes.Internal},
-	CodeUserUpdateFailed:        {msgZh: "编辑用户失败",   msgEn: "Update user failed", grpc: codes.Internal},
-	CodeUserGetFailed:           {msgZh: "查询用户失败",   msgEn: "Get user failed", grpc: codes.Internal},
-	CodeUserDeleteFailed:        {msgZh: "删除用户失败",   msgEn: "Delete user failed", grpc: codes.Internal},
-	CodeUserEnableFailed:        {msgZh: "启用用户失败",   msgEn: "Enable user failed", grpc: codes.Internal},
-	CodeUserDisableFailed:       {msgZh: "禁用用户失败",   msgEn: "Disable user failed", grpc: codes.Internal},
+	CodeUserNotFound:            {grpc: codes.NotFound},
+	CodeUserUsernameExists:      {grpc: codes.AlreadyExists},
+	CodeUserAlreadyDisabled:     {grpc: codes.FailedPrecondition},
+	CodeUserAlreadyEnabled:      {grpc: codes.FailedPrecondition},
+	CodeUserOrgAlreadySecondary: {grpc: codes.FailedPrecondition},
+	CodeUserOrgIsPrimary:        {grpc: codes.FailedPrecondition},
+	CodeUserOrgNotSecondary:     {grpc: codes.FailedPrecondition},
+	CodeUserPrimaryOrgNotFound:  {grpc: codes.NotFound},
+	CodeUserCreateFailed:        {grpc: codes.Internal},
+	CodeUserUpdateFailed:        {grpc: codes.Internal},
+	CodeUserGetFailed:           {grpc: codes.Internal},
+	CodeUserDeleteFailed:        {grpc: codes.Internal},
+	CodeUserEnableFailed:        {grpc: codes.Internal},
+	CodeUserDisableFailed:       {grpc: codes.Internal},
 }
 
 // Register 注册自定义业务错误码（业务段位 2000+ 用）。
 // 必须在业务包的 init() 阶段调用；禁止在请求处理路径并发调用。
+//
+// Deprecated: msgZh/msgEn 参数已由 i18n 唯一提供（见 Message / i18n 包），本函数忽略二者，
+// 仅登记 code→grpc 映射。消息文案请配置到服务自己的 i18n/<lang>.po（键为 code）。
 func Register(code, msgZh, msgEn string, grpcCode codes.Code) {
-	registry[code] = errorMeta{msgZh: msgZh, msgEn: msgEn, grpc: grpcCode}
+	registry[code] = errorMeta{grpc: grpcCode}
 }
 
 // 目录域便捷构造函数
