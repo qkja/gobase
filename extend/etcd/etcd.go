@@ -25,8 +25,8 @@ var EtcdHooks []GobaseEtcdHook
 func init() {
 	config.LoadConfig()
 
-	if config.ExistConfigFile() && config.GetValueBoolDefault("base.etcd.enable", false) {
-		err := config.GetValueObject("base.etcd", &config.EtcdCfg)
+	if config.ExistConfigFile() && config.GetValueBoolDefault("etcd.enable", false) {
+		err := config.GetValueObject("etcd", &config.EtcdCfg)
 		if err != nil {
 			logger.Warn("读取etcd配置异常")
 			return
@@ -38,7 +38,7 @@ func init() {
 }
 
 func NewEtcdClient() (*EtcdClientWrap, error) {
-	if !config.GetValueBoolDefault("base.etcd.enable", false) {
+	if !config.GetValueBoolDefault("etcd.enable", false) {
 		logger.Error("etcd没有配置，请先配置")
 		return nil, nil
 	}
@@ -57,7 +57,7 @@ func NewEtcdClient() (*EtcdClientWrap, error) {
 	if config.EtcdCfg.AutoSyncInterval != "" {
 		t, err := time.ParseDuration(config.EtcdCfg.AutoSyncInterval)
 		if err != nil {
-			logger.Warn("读取配置【base.etcd.auto-sync-interval】异常", err)
+			logger.Warn("读取配置【etcd.auto-sync-interval】异常", err)
 		} else {
 			etcdCfg.AutoSyncInterval = t
 		}
@@ -66,7 +66,7 @@ func NewEtcdClient() (*EtcdClientWrap, error) {
 	if config.EtcdCfg.DialTimeout != "" {
 		t, err := time.ParseDuration(config.EtcdCfg.DialTimeout)
 		if err != nil {
-			logger.Warn("读取配置【base.etcd.dial-timeout】异常", err)
+			logger.Warn("读取配置【etcd.dial-timeout】异常", err)
 		} else {
 			etcdCfg.DialTimeout = t
 		}
@@ -75,7 +75,7 @@ func NewEtcdClient() (*EtcdClientWrap, error) {
 	if config.EtcdCfg.DialKeepAliveTime != "" {
 		t, err := time.ParseDuration(config.EtcdCfg.DialKeepAliveTime)
 		if err != nil {
-			logger.Warn("读取配置【base.etcd.dial-keep-alive-time】异常", err)
+			logger.Warn("读取配置【etcd.dial-keep-alive-time】异常", err)
 		} else {
 			etcdCfg.DialKeepAliveTime = t
 		}
@@ -84,7 +84,7 @@ func NewEtcdClient() (*EtcdClientWrap, error) {
 	if config.EtcdCfg.DialKeepAliveTimeout != "" {
 		t, err := time.ParseDuration(config.EtcdCfg.DialKeepAliveTimeout)
 		if err != nil {
-			logger.Warn("读取配置【base.etcd.dial-keep-alive-timeout】异常", err)
+			logger.Warn("读取配置【etcd.dial-keep-alive-timeout】异常", err)
 		} else {
 			etcdCfg.DialKeepAliveTimeout = t
 		}
@@ -128,7 +128,7 @@ func NewEtcdClient() (*EtcdClientWrap, error) {
 }
 
 func NewEtcdClientWithCfg(etcdCfg etcdClientV3.Config) (*EtcdClientWrap, error) {
-	if !config.GetValueBoolDefault("base.etcd.enable", false) {
+	if !config.GetValueBoolDefault("etcd.enable", false) {
 		logger.Error("etcd没有配置，请先配置")
 		return nil, nil
 	}
@@ -487,5 +487,5 @@ func (g *EtcdLogger) V(l int) bool {
 }
 
 //func EtcdTracingIsOpen() bool {
-//	return config.GetValueBoolDefault("base.tracing.enable", false) && config.GetValueBoolDefault("base.tracing.etcd.enable", false)
+//	return config.GetValueBoolDefault("tracing.enable", false) && config.GetValueBoolDefault("tracing.etcd.enable", false)
 //}

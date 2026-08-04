@@ -1,5 +1,4 @@
-base:
-  redis:
-    enable: true
-    standalone:
-      addr: localhost:16379
+redis:
+  enable: true
+  standalone:
+    addr: localhost:16379

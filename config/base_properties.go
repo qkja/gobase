@@ -6,7 +6,7 @@ var RedisCfg RedisConfig
 var EtcdCfg EtcdConfig
 var EmqxCfg EmqxConfig
 
-// BaseConfig base前缀
+// BaseConfig 顶层配置（application/logger/server/endpoint...）
 type BaseConfig struct {
 	Api         BaseApi         `yaml:"api"`
 	Application BaseApplication `yaml:"application"`
@@ -97,9 +97,9 @@ type StorageConnectionConfig struct {
 	Parameters string `yaml:"parameters"`
 }
 
-// ---------------------------- base.redis ----------------------------
+// ---------------------------- redis ----------------------------
 
-// RedisConfig base.redis前缀
+// RedisConfig redis 顶层配置
 type RedisConfig struct {
 	Password string
 	Username string
@@ -144,7 +144,7 @@ type RedisConfig struct {
 	IdleCheckFrequency int
 }
 
-// RedisStandaloneConfig base.redis.standalone
+// RedisStandaloneConfig redis.standalone
 type RedisStandaloneConfig struct {
 	Addr     string
 	Database int
@@ -153,7 +153,7 @@ type RedisStandaloneConfig struct {
 	ReadOnly bool
 }
 
-// RedisSentinelConfig base.redis.sentinel
+// RedisSentinelConfig redis.sentinel
 type RedisSentinelConfig struct {
 	// 哨兵的集群名字
 	Master string
@@ -204,7 +204,7 @@ type LoggerConfig struct {
 	} `yaml:"console"`
 }
 
-// ---------------------------- base.datasource ----------------------------
+// ---------------------------- datasource ----------------------------
 type DatasourceConfig struct {
 	Username   string
 	Password   string

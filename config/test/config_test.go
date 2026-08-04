@@ -137,7 +137,7 @@ func TestAppend(t *testing.T) {
 
 // 测试cm文件位置定制化
 func TestConfigInit(t *testing.T) {
-	_ = os.Setenv("base.config.additional-location", "./application-append.yaml")
+	_ = os.Setenv("config.additional-location", "./application-append.yaml")
 	config.LoadConfigFromRelativePath("./application-append-original.yaml")
 
 	assert.Equal(t, config.GetValueString("a.b.c"), "c-value-change")

@@ -1,4 +1,3 @@
-base:
-  application:
-    # 服务名
-    name: isc-demo
+application:
+  # 服务名
+  name: isc-demo

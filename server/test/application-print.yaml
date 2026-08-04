@@ -1,5 +1,2 @@
-base:
-  server:
-    enable: true
-
-
+server:
+  enable: true

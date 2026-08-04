@@ -42,9 +42,9 @@ func NewGormDbWithNameAndConfig(datasourceName string, gormConfig *gorm.Config) 
 
 func doNewGormDb(datasourceName string, gormConfig *gorm.Config) (*gorm.DB, error) {
 	datasourceConfig := config.DatasourceConfig{}
-	targetDatasourceName := "base.datasource"
+	targetDatasourceName := "datasource"
 	if datasourceName != "" {
-		targetDatasourceName = "base.datasource." + datasourceName
+		targetDatasourceName = "datasource." + datasourceName
 	}
 	err := config.GetValueObject(targetDatasourceName, &datasourceConfig)
 	if err != nil {
@@ -67,35 +67,35 @@ func doNewGormDb(datasourceName string, gormConfig *gorm.Config) (*gorm.DB, erro
 
 	d, _ := gormDb.DB()
 
-	maxIdleConns := config.GetValueInt("base.datasource.connect-pool.max-idle-conns")
+	maxIdleConns := config.GetValueInt("datasource.connect-pool.max-idle-conns")
 	if maxIdleConns != 0 {
 		// 设置空闲的最大连接数
 		d.SetMaxIdleConns(maxIdleConns)
 	}
 
-	maxOpenConns := config.GetValueInt("base.datasource.connect-pool.max-open-conns")
+	maxOpenConns := config.GetValueInt("datasource.connect-pool.max-open-conns")
 	if maxOpenConns != 0 {
 		// 设置数据库打开连接的最大数量
 		d.SetMaxOpenConns(maxOpenConns)
 	}
 
-	maxLifeTime := config.GetValueString("base.datasource.connect-pool.max-life-time")
+	maxLifeTime := config.GetValueString("datasource.connect-pool.max-life-time")
 	if maxLifeTime != "" {
 		// 设置连接可重复使用的最大时间
 		t, err := time.ParseDuration(maxLifeTime)
 		if err != nil {
-			baseLogger.Warn("读取配置【base.datasource.connect-pool.max-life-time】异常", err)
+			baseLogger.Warn("读取配置【datasource.connect-pool.max-life-time】异常", err)
 		} else {
 			d.SetConnMaxLifetime(t)
 		}
 	}
 
-	maxIdleTime := config.GetValueString("base.datasource.connect-pool.max-idle-time")
+	maxIdleTime := config.GetValueString("datasource.connect-pool.max-idle-time")
 	if maxIdleTime != "" {
 		// 设置conn最大空闲时间设置连接空闲的最大时间
 		t, err := time.ParseDuration(maxIdleTime)
 		if err != nil {
-			baseLogger.Warn("读取配置【base.datasource.connect-pool.max-idle-time】异常", err)
+			baseLogger.Warn("读取配置【datasource.connect-pool.max-idle-time】异常", err)
 		} else {
 			d.SetConnMaxIdleTime(t)
 		}
@@ -152,15 +152,15 @@ func getMysqlConfig(dsn, driverName string) mysql.Config {
 	return mysql.Config{
 		DriverName:                    driverName,
 		DSN:                           dsn,
-		ServerVersion:                 config.GetValueStringDefault("base.datasource.mysql.server-version", ""),
-		SkipInitializeWithVersion:     config.GetValueBoolDefault("base.datasource.mysql.skip-initialize-with-version", false),
-		DefaultStringSize:             config.GetValueUIntDefault("base.datasource.mysql.default-string-size", 0),
-		DisableWithReturning:          config.GetValueBoolDefault("base.datasource.mysql.disable-with-returning", false),
-		DisableDatetimePrecision:      config.GetValueBoolDefault("base.datasource.mysql.disable-datetime-precision", false),
-		DontSupportRenameIndex:        config.GetValueBoolDefault("base.datasource.mysql.dont-support-rename-index", false),
-		DontSupportRenameColumn:       config.GetValueBoolDefault("base.datasource.mysql.dont-support-rename-column", false),
-		DontSupportForShareClause:     config.GetValueBoolDefault("base.datasource.mysql.dont-support-for-share-clause", false),
-		DontSupportNullAsDefaultValue: config.GetValueBoolDefault("base.datasource.mysql.dont-support-null-as-default-value", false),
+		ServerVersion:                 config.GetValueStringDefault("datasource.mysql.server-version", ""),
+		SkipInitializeWithVersion:     config.GetValueBoolDefault("datasource.mysql.skip-initialize-with-version", false),
+		DefaultStringSize:             config.GetValueUIntDefault("datasource.mysql.default-string-size", 0),
+		DisableWithReturning:          config.GetValueBoolDefault("datasource.mysql.disable-with-returning", false),
+		DisableDatetimePrecision:      config.GetValueBoolDefault("datasource.mysql.disable-datetime-precision", false),
+		DontSupportRenameIndex:        config.GetValueBoolDefault("datasource.mysql.dont-support-rename-index", false),
+		DontSupportRenameColumn:       config.GetValueBoolDefault("datasource.mysql.dont-support-rename-column", false),
+		DontSupportForShareClause:     config.GetValueBoolDefault("datasource.mysql.dont-support-for-share-clause", false),
+		DontSupportNullAsDefaultValue: config.GetValueBoolDefault("datasource.mysql.dont-support-null-as-default-value", false),
 	}
 }
 

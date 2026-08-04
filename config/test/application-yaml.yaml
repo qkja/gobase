@@ -9,6 +9,5 @@ one:
 
 server:
   port: 31101
-base:
-  application:
-    name: "sdf-local78-yaml"
+application:
+  name: "sdf-local78-yaml"

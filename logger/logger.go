@@ -49,13 +49,13 @@ func init() {
 	tenantDebugLogger = Group("tenant_debug")
 	tenantDebugLogger.SetLevel(logrus.DebugLevel)
 
-	_gColor := config.GetValueBoolDefault("base.logger.color.enable", false)
+	_gColor := config.GetValueBoolDefault("logger.color.enable", false)
 	gColor = _gColor
 }
 
-// reloadDebugTenants 读取配置 base.logger.debug_tenant_ids
+// reloadDebugTenants 读取配置 logger.debug_tenant_ids
 func reloadDebugTenants() {
-	arr := config.GetValueArray("base.logger.debug_tenant_ids")
+	arr := config.GetValueArray("logger.debug_tenant_ids")
 	debugTenantIDs = make([]string, 0, len(arr))
 	for _, v := range arr {
 		if s, ok := v.(string); ok && s != "" {
@@ -77,7 +77,7 @@ func debugTenants() []string {
 // debugTenantEnabled 判断指定租户是否开启 debug
 // 满足任一条件：
 //  1. 全局级别为 debug/trace
-//  2. tenantID 在 base.logger.debug_tenant_ids 列表中
+//  2. tenantID 在 logger.debug_tenant_ids 列表中
 func debugTenantEnabled(tenantID string) bool {
 	// 全局 debug：级别为 debug/trace 时（数值 >= DebugLevel）
 	if rootLogger.IsLevelEnabled(logrus.DebugLevel) {
@@ -108,7 +108,7 @@ func Group(groupNames ...string) *logrus.Logger {
 		formatters := &StandardFormatter{}
 		resultLogger.Formatter = formatters
 
-		loggerDir := config.GetValueStringDefault("base.logger.home", "./logs/")
+		loggerDir := config.GetValueStringDefault("logger.home", "./logs/")
 		resultLogger.AddHook(lfshook.NewHook(lfshook.WriterMap{
 			logrus.DebugLevel: rotateLogWithCache(loggerDir, "debug"),
 			logrus.InfoLevel:  rotateLogWithCache(loggerDir, "info"),
@@ -123,8 +123,8 @@ func Group(groupNames ...string) *logrus.Logger {
 	maxValueLevel := logrus.PanicLevel
 	for _, groupName := range groupNamesOfUnContain {
 		var finalGroupLevel string
-		rootLevel := config.GetValueStringDefault("base.logger.level", "info")
-		groupLevel := config.GetValueString("base.logger.group." + groupName + ".level")
+		rootLevel := config.GetValueStringDefault("logger.level", "info")
+		groupLevel := config.GetValueString("logger.group." + groupName + ".level")
 		if groupLevel != "" {
 			finalGroupLevel = groupLevel
 		} else {
@@ -165,7 +165,7 @@ func doGroup(groupName string) *logrus.Logger {
 	formatters := &StandardFormatter{}
 	logger.Formatter = formatters
 
-	loggerDir := config.GetValueStringDefault("base.logger.home", "./logs/")
+	loggerDir := config.GetValueStringDefault("logger.home", "./logs/")
 	logger.AddHook(lfshook.NewHook(lfshook.WriterMap{
 		logrus.DebugLevel: rotateLogWithCache(loggerDir, "debug"),
 		logrus.InfoLevel:  rotateLogWithCache(loggerDir, "info"),
@@ -176,8 +176,8 @@ func doGroup(groupName string) *logrus.Logger {
 	}, formatters))
 
 	var finalGroupLevel string
-	rootLevel := config.GetValueStringDefault("base.logger.level", "info")
-	groupLevel := config.GetValueString("base.logger.group." + groupName + ".level")
+	rootLevel := config.GetValueStringDefault("logger.level", "info")
+	groupLevel := config.GetValueString("logger.group." + groupName + ".level")
 	if groupLevel != "" {
 		finalGroupLevel = groupLevel
 	} else {
@@ -196,13 +196,13 @@ func doGroup(groupName string) *logrus.Logger {
 
 func InitLog() {
 	// rootLogger already initialized in init, just update level and color
-	lgLevel, err := logrus.ParseLevel(config.GetValueStringDefault("base.logger.level", "info"))
+	lgLevel, err := logrus.ParseLevel(config.GetValueStringDefault("logger.level", "info"))
 	if err != nil {
 		lgLevel = logrus.InfoLevel
 	}
 	rootLogger.SetLevel(lgLevel)
 
-	_gColor := config.GetValueBoolDefault("base.logger.color.enable", false)
+	_gColor := config.GetValueBoolDefault("logger.color.enable", false)
 	gColor = _gColor
 
 	listener.AddListener(listener.EventOfConfigChange, ConfigChangeListener)
@@ -211,11 +211,11 @@ func InitLog() {
 func ConfigChangeListener(event listener.BaseEvent) {
 	ev := event.(listener.ConfigChangeEvent)
 	switch {
-	case ev.Key == "base.logger.level":
+	case ev.Key == "logger.level":
 		SetGlobalLevel(ev.Value)
-	case ev.Key == "base.logger.debug_tenant_ids":
+	case ev.Key == "logger.debug_tenant_ids":
 		reloadDebugTenants()
-	case strings.HasPrefix(ev.Key, "base.logger.group"):
+	case strings.HasPrefix(ev.Key, "logger.group"):
 		words := strings.Split(ev.Key, ".")
 		if len(words) != 5 {
 			return
@@ -234,10 +234,10 @@ func ConfigChangeListener(event listener.BaseEvent) {
 	}
 }
 
-// applyLevelFromConfig 热加载后重读 base.logger.* 配置，应用到已创建的 logger。
+// applyLevelFromConfig 热加载后重读 logger.* 配置，应用到已创建的 logger。
 // 只更新已存在的分组，不创建新分组（新分组首次 Group() 时自行读配置）。
 func applyLevelFromConfig() {
-	rootLevel := config.GetValueStringDefault("base.logger.level", "info")
+	rootLevel := config.GetValueStringDefault("logger.level", "info")
 	if le, err := logrus.ParseLevel(rootLevel); err == nil {
 		rootLogger.SetLevel(le)
 	}
@@ -246,7 +246,7 @@ func applyLevelFromConfig() {
 		if groupName == "root" || groupName == "tenant_debug" {
 			continue
 		}
-		lvl := config.GetValueString("base.logger.group." + groupName + ".level")
+		lvl := config.GetValueString("logger.group." + groupName + ".level")
 		if lvl == "" {
 			lvl = rootLevel
 		}
@@ -309,7 +309,7 @@ func Debug(format string, v ...any) {
 
 // DebugWithTenant 按租户控制 debug 日志
 // 自动在消息前注入租户标识 [TenantId:xxx]，调用方无需重复传租户
-// 仅当全局 debug 开启，或 tenantID 在 base.logger.debug_tenant_ids 列表中时输出
+// 仅当全局 debug 开启，或 tenantID 在 logger.debug_tenant_ids 列表中时输出
 func DebugWithTenant(tenantID, format string, v ...any) {
 	// 未开启 debug 时直接返回，避免格式化开销
 	if !debugTenantEnabled(tenantID) {
@@ -360,9 +360,9 @@ func rotateLog(path, level string) *rotatelogs.RotateLogs {
 		path = "./logs/"
 	}
 
-	maxSizeStr := config.GetValueStringDefault("base.logger.rotate.max-size", "300MB")
-	maxHistoryStr := config.GetValueStringDefault("base.logger.rotate.max-history", "60d")
-	rotateTimeStr := config.GetValueStringDefault("base.logger.rotate.time", "1d")
+	maxSizeStr := config.GetValueStringDefault("logger.rotate.max-size", "300MB")
+	maxHistoryStr := config.GetValueStringDefault("logger.rotate.max-history", "60d")
+	rotateTimeStr := config.GetValueStringDefault("logger.rotate.time", "1d")
 
 	rotateOptions := []rotatelogs.Option{rotatelogs.WithLinkName(path + "app-" + level + ".log")}
 	if maxSizeStr != "" {
@@ -442,7 +442,7 @@ func (m *StandardFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			timestamp,
 			black,
 			os.Getenv("HOSTNAME"),
-			config.GetValueStringDefault("base.application.name", "gobase"),
+			config.GetValueStringDefault("application.name", "gobase"),
 			store.Get(constants.TRACE_HEAD_ID), store.Get(constants.TRACE_HEAD_USER_ID),
 			levelColor,
 			strings.ToUpper(entry.Level.String()),
@@ -454,7 +454,7 @@ func (m *StandardFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		newLog = fmt.Sprintf("[%s] %s [%s] [%s] [%v] %s %s %s %s\n",
 			timestamp,
 			os.Getenv("HOSTNAME"),
-			config.GetValueStringDefault("base.application.name", "gobase"),
+			config.GetValueStringDefault("application.name", "gobase"),
 			store.Get(constants.TRACE_HEAD_ID), store.Get(constants.TRACE_HEAD_USER_ID),
 			strings.ToUpper(entry.Level.String()),
 			funPath,
@@ -527,7 +527,7 @@ func functionName(frame *runtime.Frame) string {
 }
 
 func shortLogPath(logPath string) string {
-	loggerPath := config.GetValueStringDefault("base.logger.path.type", "short")
+	loggerPath := config.GetValueStringDefault("logger.path.type", "short")
 	if loggerPath == "short" {
 		pathMeta := strings.Split(logPath, string(os.PathSeparator))
 		if len(pathMeta) > 3 {

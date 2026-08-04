@@ -31,5 +31,5 @@ func healthSystemDestroy(c *gin.Context) {
 }
 
 func getVersion() string {
-	return config.GetValueStringDefault("base.server.version", defaultVersion)
+	return config.GetValueStringDefault("server.version", defaultVersion)
 }

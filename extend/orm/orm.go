@@ -13,9 +13,9 @@ import (
 
 func getDbDsnWithName(datasourceName string) (string, error) {
 	datasourceConfig := config.DatasourceConfig{}
-	targetDatasourceName := "base.datasource"
+	targetDatasourceName := "datasource"
 	if datasourceName != "" {
-		targetDatasourceName = "base.datasource." + datasourceName
+		targetDatasourceName = "datasource." + datasourceName
 	}
 	err := config.GetValueObject(targetDatasourceName, &datasourceConfig)
 	if err != nil {
@@ -28,9 +28,9 @@ func getDbDsnWithName(datasourceName string) (string, error) {
 
 func getDbDsn(dbType string, datasourceConfig config.DatasourceConfig) string {
 	sqlConfigMap := map[string]string{}
-	err := config.GetValueObject("base.datasource.url-config", &sqlConfigMap)
+	err := config.GetValueObject("datasource.url-config", &sqlConfigMap)
 	if err != nil {
-		logger.Warn("读取配置【base.datasource.url-config】异常", err)
+		logger.Warn("读取配置【datasource.url-config】异常", err)
 	}
 
 	switch dbType {
@@ -74,7 +74,7 @@ func getDbDsn(dbType string, datasourceConfig config.DatasourceConfig) string {
 
 func ConfigChangeListenerOfOrm(event listener.BaseEvent) {
 	ev := event.(listener.ConfigChangeEvent)
-	if ev.Key == "base.orm.show-sql" {
+	if ev.Key == "orm.show-sql" {
 		if isc.ToBool(ev.Value) {
 			logger.Group("orm").SetLevel(logrus.DebugLevel)
 		} else {

@@ -25,34 +25,33 @@ NewXormDbWithParams(params map[string]string)
 ```
 #### 配置
 ```yaml
-base:
-  datasource:
-    # 是否启用，默认关闭
-    enable: true
-    username: user
-    password: passwd
-    host: 10.33.33.33
-    port: 8080
-    # 目前支持: mysql、postgresql、sqlite、sqlserver
-    driver-name: mysql
-    # 数据库名
-    db-name: xx_db
-    # sqlite的的数据库路径；只有sqlite需要配置这个
-    sqlite-path: xxx.db
-    # 示例：charset=utf8&parseTime=True&loc=Local 等url后面的配置，直接配置即可
-    url-config:
-      xxx: xxxxx
-      yyy: yyyyy
-    # 连接池配置
-    connect-pool:
-      # 最大空闲连接数
-      max-idle-conns: 10
-      # 最大连接数
-      max-open-conns: 10
-      # 连接可重用最大时间；带字符（s：秒，m：分钟，h：小时）
-      max-life-time: 10s
-      # 连接空闲的最大时间；带字符（s：秒，m：分钟，h：小时）
-      max-idle-time: 10s
+datasource:
+  # 是否启用，默认关闭
+  enable: true
+  username: user
+  password: passwd
+  host: 10.33.33.33
+  port: 8080
+  # 目前支持: mysql、postgresql、sqlite、sqlserver
+  driver-name: mysql
+  # 数据库名
+  db-name: xx_db
+  # sqlite的的数据库路径；只有sqlite需要配置这个
+  sqlite-path: xxx.db
+  # 示例：charset=utf8&parseTime=True&loc=Local 等url后面的配置，直接配置即可
+  url-config:
+    xxx: xxxxx
+    yyy: yyyyy
+  # 连接池配置
+  connect-pool:
+    # 最大空闲连接数
+    max-idle-conns: 10
+    # 最大连接数
+    max-open-conns: 10
+    # 连接可重用最大时间；带字符（s：秒，m：分钟，h：小时）
+    max-life-time: 10s
+    # 连接空闲的最大时间；带字符（s：秒，m：分钟，h：小时）
+    max-idle-time: 10s
 ```
 
 ### 多数据源
@@ -77,62 +76,61 @@ orm.NewXormDbMasterSlave(masterDatasourceName string, slaveDatasourceNames []str
 ```
 #### 配置
 ```yml
-base:
-  datasource:
-    # 是否启用，默认关闭
-    enable: true
-    # 数据源配置名1
-    xxx-name1:
-      username: xxx
-      password: xxx
-      host: xxx
-      port: xxx
-      # 目前支持: mysql、postgresql、sqlite、sqlserver
-      driver-name: xxx
-      # 数据库名
-      db-name: xx_db
-      # sqlite的的数据库路径
-      sqlite-path: xxx.db
-      # 示例：charset=utf8&parseTime=True&loc=Local 等url后面的配置，直接配置即可
-      url-config:
-        xxx: xxx
-        yyy: yyy
-      # 连接池配置
-      connect-pool:
-        # 最大空闲连接数
-        max-idle-conns: 10
-        # 最大连接数
-        max-open-conns: 10
-        # 连接可重用最大时间；带字符（s：秒，m：分钟，h：小时）
-        max-life-time: 10s
-        # 连接空闲的最大时间；带字符（s：秒，m：分钟，h：小时）
-        max-idle-time: 10s
-    # 数据源配置名2
-    xxx-name2:
-      username: xxx
-      password: xxx
-      host: xxx
-      port: xxx
-      # 目前支持: mysql、postgresql、sqlite、sqlserver
-      driver-name: xxx
-      # 数据库名
-      db-name: xx_db
-      # sqlite的的数据库路径
-      sqlite-path: xxx.db
-      # 示例：charset=utf8&parseTime=True&loc=Local 等url后面的配置，直接配置即可
-      url-config:
-        xxx: xxxxx
-        yyy: yyyyy
-      # 连接池配置
-      connect-pool:
-        # 最大空闲连接数
-        max-idle-conns: 10
-        # 最大连接数
-        max-open-conns: 10
-        # 连接可重用最大时间；带字符（s：秒，m：分钟，h：小时）
-        max-life-time: 10s
-        # 连接空闲的最大时间；带字符（s：秒，m：分钟，h：小时）
-        max-idle-time: 10s
+datasource:
+  # 是否启用，默认关闭
+  enable: true
+  # 数据源配置名1
+  xxx-name1:
+    username: xxx
+    password: xxx
+    host: xxx
+    port: xxx
+    # 目前支持: mysql、postgresql、sqlite、sqlserver
+    driver-name: xxx
+    # 数据库名
+    db-name: xx_db
+    # sqlite的的数据库路径
+    sqlite-path: xxx.db
+    # 示例：charset=utf8&parseTime=True&loc=Local 等url后面的配置，直接配置即可
+    url-config:
+      xxx: xxx
+      yyy: yyy
+    # 连接池配置
+    connect-pool:
+      # 最大空闲连接数
+      max-idle-conns: 10
+      # 最大连接数
+      max-open-conns: 10
+      # 连接可重用最大时间；带字符（s：秒，m：分钟，h：小时）
+      max-life-time: 10s
+      # 连接空闲的最大时间；带字符（s：秒，m：分钟，h：小时）
+      max-idle-time: 10s
+  # 数据源配置名2
+  xxx-name2:
+    username: xxx
+    password: xxx
+    host: xxx
+    port: xxx
+    # 目前支持: mysql、postgresql、sqlite、sqlserver
+    driver-name: xxx
+    # 数据库名
+    db-name: xx_db
+    # sqlite的的数据库路径
+    sqlite-path: xxx.db
+    # 示例：charset=utf8&parseTime=True&loc=Local 等url后面的配置，直接配置即可
+    url-config:
+      xxx: xxxxx
+      yyy: yyyyy
+    # 连接池配置
+    connect-pool:
+      # 最大空闲连接数
+      max-idle-conns: 10
+      # 最大连接数
+      max-open-conns: 10
+      # 连接可重用最大时间；带字符（s：秒，m：分钟，h：小时）
+      max-life-time: 10s
+      # 连接空闲的最大时间；带字符（s：秒，m：分钟，h：小时）
+      max-idle-time: 10s
 ```
 ### 示例：gorm
 ```go
@@ -208,17 +206,16 @@ func TestXorm1(t *testing.T) {
 支持配置：
 - 打印sql
 ```yaml
-base:
-  orm:
-    show-sql: true
+orm:
+  show-sql: true
 ```
 #### 线上动态开启和关闭sql的话
 ```yaml
-curl -X PUT http://localhost:xxx/{api-prefix}/{api-module}/config/update -d '{"key":"baes.orm.show-sql", "value":"true"}'
+curl -X PUT http://localhost:xxx/{api-prefix}/{api-module}/config/update -d '{"key":"orm.show-sql", "value":"true"}'
 ```
 或者如下
 ```yaml
-curl -X PUT http://localhost:xxx/{api-prefix}/{api-module}/config/update -d '{"key":"baes.logger.group.orm.level", "value":"debug"}'
+curl -X PUT http://localhost:xxx/{api-prefix}/{api-module}/config/update -d '{"key":"logger.group.orm.level", "value":"debug"}'
 ```
 这两个配置功能是等同的，一个是直接基于logger来修改，一个是基于orm的配置来修改
 
@@ -227,21 +224,20 @@ curl -X PUT http://localhost:xxx/{api-prefix}/{api-module}/config/update -d '{"k
 ### 更多配置
 在一些场景下，也需要mysql本身提供一些配置，就是最近遇到gorm默认在mariadb下面是报失败，因此增加了这样的配置（version >= 1.5.2）
 ```yaml
-base:
-  datasource:
-    mysql:
-      server-version: ""
-      skip-initialize-with-version: false
-      default-string-size: 0
-      disable-with-returning: false
-      disable-datetime-precision: false
-      dont-support-rename-index: false
-      dont-support-rename-column: false
-      dont-support-for-share-clause: false
-      dont-support-null-as-default-value: false
+datasource:
+  mysql:
+    server-version: ""
+    skip-initialize-with-version: false
+    default-string-size: 0
+    disable-with-returning: false
+    disable-datetime-precision: false
+    dont-support-rename-index: false
+    dont-support-rename-column: false
+    dont-support-for-share-clause: false
+    dont-support-null-as-default-value: false
 ```
 以上这些配置其实对应的是如下的代码，示例
 ```go
-// 其中的`DisableWithReturning` 对应的就是上面的 base.datasource.mysql.disable-with-returning，其他更多的配置都在里面
+// 其中的`DisableWithReturning` 对应的就是上面的 datasource.mysql.disable-with-returning，其他更多的配置都在里面
 gorm.Open(mysql.New(mysql.Config{Conn: conn, DisableWithReturning: true}))
 ```

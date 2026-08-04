@@ -16,19 +16,19 @@ import (
 // 修复前 ConfigChangeListener 只认 base.logger.level 等逐 key 事件，appconfig.reload 不处理 → 级别不更新。
 func TestHotReloadAppliesLevel(t *testing.T) {
 	// 修复后空 store 也能直接 SetValue 写入（config.SetValue 不再静默失败）
-	config.SetValue("base.logger.level", "debug")
+	config.SetValue("logger.level", "debug")
 	InitLog()
 	if got := rootLogger.GetLevel(); got != logrus.DebugLevel {
 		t.Fatalf("baseline: rootLogger level = %v (store=%q), want debug",
-			got, config.GetValueStringDefault("base.logger.level", "<none>"))
+			got, config.GetValueStringDefault("logger.level", "<none>"))
 	}
 
 	// 模拟热加载：store 更新为 error（静默，无逐 key 事件），再补发合成事件
-	config.AppendValue("base.logger.level=error")
+	config.AppendValue("logger.level=error")
 	listener.PublishEvent(listener.ConfigChangeEvent{Key: "appconfig.reload", Value: "1"})
 
 	if got := rootLogger.GetLevel(); got != logrus.ErrorLevel {
 		t.Fatalf("after hot reload: rootLogger level = %v (store=%q), want error",
-			got, config.GetValueStringDefault("base.logger.level", "<none>"))
+			got, config.GetValueStringDefault("logger.level", "<none>"))
 	}
 }

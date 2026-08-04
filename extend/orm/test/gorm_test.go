@@ -84,11 +84,11 @@ func TestGormOfLoggerChange(t *testing.T) {
 		db.First(&demo).Where("name=?", "zhou")
 		time.Sleep(time.Second)
 		if i == 2 {
-			config.SetValue("base.orm.show-sql", true)
+			config.SetValue("orm.show-sql", true)
 		}
 
 		if i == 4 {
-			config.SetValue("base.orm.show-sql", false)
+			config.SetValue("orm.show-sql", false)
 		}
 	}
 

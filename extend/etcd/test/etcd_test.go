@@ -14,8 +14,8 @@ import (
 
 func Test1(t *testing.T) {
 	config.LoadYamlFile("./application-test1.yaml")
-	if config.GetValueBoolDefault("base.etcd.enable", false) {
-		err := config.GetValueObject("base.etcd", &config.EtcdCfg)
+	if config.GetValueBoolDefault("etcd.enable", false) {
+		err := config.GetValueObject("etcd", &config.EtcdCfg)
 		if err != nil {
 			return
 		}
@@ -35,8 +35,8 @@ func Test1(t *testing.T) {
 
 func TestRetry(t *testing.T) {
 	config.LoadYamlFile("./application-retry.yaml")
-	if config.GetValueBoolDefault("base.etcd.enable", false) {
-		err := config.GetValueObject("base.etcd", &config.EtcdCfg)
+	if config.GetValueBoolDefault("etcd.enable", false) {
+		err := config.GetValueObject("etcd", &config.EtcdCfg)
 		if err != nil {
 			return
 		}

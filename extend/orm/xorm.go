@@ -69,9 +69,9 @@ func AddXormHook(hook GobaseXormHook) {
 
 func doNewXormDb(datasourceName string, params map[string]string) (*xorm.Engine, error) {
 	datasourceConfig := config.DatasourceConfig{}
-	targetDatasourceName := "base.datasource"
+	targetDatasourceName := "datasource"
 	if datasourceName != "" {
-		targetDatasourceName = "base.datasource." + datasourceName
+		targetDatasourceName = "datasource." + datasourceName
 	}
 	err := config.GetValueObject(targetDatasourceName, &datasourceConfig)
 	if err != nil {
@@ -95,24 +95,24 @@ func doNewXormDb(datasourceName string, params map[string]string) (*xorm.Engine,
 		xormDb.AddHook(&hook)
 	}
 
-	maxIdleConns := config.GetValueInt("base.datasource.connect-pool.max-idle-conns")
+	maxIdleConns := config.GetValueInt("datasource.connect-pool.max-idle-conns")
 	if maxIdleConns != 0 {
 		// 设置空闲的最大连接数
 		xormDb.SetMaxIdleConns(maxIdleConns)
 	}
 
-	maxOpenConns := config.GetValueInt("base.datasource.connect-pool.max-open-conns")
+	maxOpenConns := config.GetValueInt("datasource.connect-pool.max-open-conns")
 	if maxOpenConns != 0 {
 		// 设置数据库打开连接的最大数量
 		xormDb.SetMaxOpenConns(maxOpenConns)
 	}
 
-	maxLifeTime := config.GetValueString("base.datasource.connect-pool.max-life-time")
+	maxLifeTime := config.GetValueString("datasource.connect-pool.max-life-time")
 	if maxLifeTime != "" {
 		// 设置连接可重复使用的最大时间
 		t, err := time.ParseDuration(maxLifeTime)
 		if err != nil {
-			logger.Warn("读取配置【base.datasource.connect-pool.max-life-time】异常", err)
+			logger.Warn("读取配置【datasource.connect-pool.max-life-time】异常", err)
 		} else {
 			xormDb.SetConnMaxLifetime(t)
 		}

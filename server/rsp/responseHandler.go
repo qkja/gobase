@@ -28,9 +28,9 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 
 func ResponseHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		reqPrint := config.GetValueBoolDefault("base.server.request.print.enable", false)
-		rspPrint := config.GetValueBoolDefault("base.server.response.print.enable", false)
-		expPrint := config.GetValueBoolDefault("base.server.exception.print.enable", false)
+		reqPrint := config.GetValueBoolDefault("server.request.print.enable", false)
+		rspPrint := config.GetValueBoolDefault("server.response.print.enable", false)
+		expPrint := config.GetValueBoolDefault("server.exception.print.enable", false)
 
 		if !reqPrint && !rspPrint && !expPrint {
 			return
@@ -127,7 +127,7 @@ func ResponseHandler() gin.HandlerFunc {
 }
 
 func printReq(requestUri string, requestData Request) {
-	includeUri := config.GetValueArray("base.server.request.print.include-uri")
+	includeUri := config.GetValueArray("server.request.print.include-uri")
 	printFlag := false
 	if len(includeUri) != 0 {
 		for _, uri := range includeUri {
@@ -138,7 +138,7 @@ func printReq(requestUri string, requestData Request) {
 		}
 	}
 
-	excludeUri := config.GetValueArray("base.server.request.print.exclude-uri")
+	excludeUri := config.GetValueArray("server.request.print.exclude-uri")
 	if len(excludeUri) != 0 {
 		for _, uri := range excludeUri {
 			if strings.HasPrefix(requestUri, isc.ToString(uri)) {
@@ -148,7 +148,7 @@ func printReq(requestUri string, requestData Request) {
 		}
 	}
 
-	reqLogLevel := config.GetValueString("base.server.request.print.level")
+	reqLogLevel := config.GetValueString("server.request.print.level")
 	if printFlag {
 		logger.Record(reqLogLevel, "请求：%v", isc.ToJsonString(requestData))
 	}
@@ -156,7 +156,7 @@ func printReq(requestUri string, requestData Request) {
 }
 
 func printRsq(requestUri string, responseMessage Response) {
-	includeUri := config.GetValueArray("base.server.response.print.include-uri")
+	includeUri := config.GetValueArray("server.response.print.include-uri")
 	printFlag := false
 	if len(includeUri) != 0 {
 		for _, uri := range includeUri {
@@ -167,7 +167,7 @@ func printRsq(requestUri string, responseMessage Response) {
 		}
 	}
 
-	excludeUri := config.GetValueArray("base.server.response.print.exclude-uri")
+	excludeUri := config.GetValueArray("server.response.print.exclude-uri")
 	if len(excludeUri) != 0 {
 		for _, uri := range excludeUri {
 			if strings.HasPrefix(requestUri, isc.ToString(uri)) {
@@ -177,7 +177,7 @@ func printRsq(requestUri string, responseMessage Response) {
 		}
 	}
 
-	rspLogLevel := config.GetValueString("base.server.response.print.level")
+	rspLogLevel := config.GetValueString("server.response.print.level")
 	if printFlag {
 		logger.Record(rspLogLevel, "响应：%v", isc.ToJsonString(responseMessage))
 	}

@@ -79,7 +79,7 @@ func InitServer() {
 	if serverLoaded {
 		return
 	}
-	if !config.ExistConfigFile() || !config.GetValueBoolDefault("base.server.enable", false) {
+	if !config.ExistConfigFile() || !config.GetValueBoolDefault("server.enable", false) {
 		return
 	}
 
@@ -87,7 +87,7 @@ func InitServer() {
 		logger.Error("没有找到任何配置文件，服务启动失败")
 		return
 	}
-	mode := config.GetValueStringDefault("base.server.gin.mode", "release")
+	mode := config.GetValueStringDefault("server.gin.mode", "release")
 	if "debug" == mode {
 		gin.SetMode(gin.DebugMode)
 	} else if "test" == mode {
@@ -102,15 +102,15 @@ func InitServer() {
 
 	engine = gin.New()
 
-	if config.GetValueBoolDefault("base.debug.enable", true) {
+	if config.GetValueBoolDefault("debug.enable", true) {
 		// 注册pprof
-		if config.GetValueBoolDefault("base.server.gin.pprof.enable", false) {
+		if config.GetValueBoolDefault("server.gin.pprof.enable", false) {
 			pprofHave = true
 			pprof.Register(engine)
 		}
 	}
 
-	if config.GetValueBoolDefault("base.server.cors.enable", true) {
+	if config.GetValueBoolDefault("server.cors.enable", true) {
 		engine.Use(Cors())
 	}
 	engine.Use(gin.Recovery(), ErrHandler())
@@ -121,18 +121,18 @@ func InitServer() {
 	}
 
 	// 注册 健康检查endpoint
-	if config.GetValueBoolDefault("base.endpoint.health.enable", false) {
+	if config.GetValueBoolDefault("endpoint.health.enable", false) {
 		RegisterHealthCheckEndpoint(apiPreAndModule())
 	}
 
-	if config.GetValueBoolDefault("base.debug.enable", true) {
+	if config.GetValueBoolDefault("debug.enable", true) {
 		// 注册 配置查看和变更功能
-		if config.GetValueBoolDefault("base.endpoint.config.enable", false) {
+		if config.GetValueBoolDefault("endpoint.config.enable", false) {
 			RegisterConfigWatchEndpoint(apiPreAndModule())
 		}
 
 		// 注册 bean管理的功能
-		if config.GetValueBoolDefault("base.endpoint.bean.enable", false) {
+		if config.GetValueBoolDefault("endpoint.bean.enable", false) {
 			RegisterBeanWatchEndpoint(apiPreAndModule())
 		}
 
@@ -141,7 +141,7 @@ func InitServer() {
 	}
 
 	// 注册 swagger的功能
-	if config.GetValueBoolDefault("base.swagger.enable", false) {
+	if config.GetValueBoolDefault("swagger.enable", false) {
 		RegisterSwaggerEndpoint()
 	}
 
@@ -154,7 +154,7 @@ func InitServer() {
 
 func ConfigChangeListener(event listener.BaseEvent) {
 	ev := event.(listener.ConfigChangeEvent)
-	if ev.Key == "base.server.gin.pprof.enable" {
+	if ev.Key == "server.gin.pprof.enable" {
 		if isc.ToBool(ev.Value) && !pprofHave {
 			pprofHave = true
 			pprof.Register(engine)
@@ -175,7 +175,7 @@ func ErrHandler() gin.HandlerFunc {
 }
 
 func apiPreAndModule() string {
-	ap := config.GetValueStringDefault("base.api.prefix", "")
+	ap := config.GetValueStringDefault("api.prefix", "")
 	if ap != "" {
 		ApiPrefix = ap
 	}
@@ -203,12 +203,12 @@ func StartServer() {
 
 	listener.PublishEvent(listener.ServerRunStartEvent{})
 
-	if !config.GetValueBoolDefault("base.server.enable", true) {
+	if !config.GetValueBoolDefault("server.enable", true) {
 		return
 	}
 
 	logger.Info("开始启动服务")
-	port := config.GetValueIntDefault("base.server.port", 8080)
+	port := config.GetValueIntDefault("server.port", 8080)
 	logger.Info("服务端口号: %d", port)
 
 	graceRun(port)
@@ -345,7 +345,7 @@ func RegisterRoute(path string, method HttpMethod, handler gin.HandlerFunc) gin.
 		return nil
 	}
 	if engine == nil {
-		logger.Warn("server启动失败，请配置 base.server.enable 或者查看相关日志")
+		logger.Warn("server启动失败，请配置 server.enable 或者查看相关日志")
 		return nil
 	}
 	switch method {
@@ -495,7 +495,7 @@ func getPathAppendApiModel(path string) string {
 	// 获取 api-module
 	apiModel := isc.ISCString(config.GetValueString("api-module")).Trim("/")
 	// 获取api前缀
-	ap := isc.ISCString(config.GetValueStringDefault("base.api.prefix", "")).Trim("/")
+	ap := isc.ISCString(config.GetValueStringDefault("api.prefix", "")).Trim("/")
 	if ap != "" {
 		ApiPrefix = "/" + string(ap)
 	}

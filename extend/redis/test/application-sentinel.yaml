@@ -1,9 +1,8 @@
-base:
-  redis:
-    enable: true
-    sentinel:
-      master: mymaster
-      addrs:
-        - localhost:26379
-        - localhost:26380
-        - localhost:26381
+redis:
+  enable: true
+  sentinel:
+    master: mymaster
+    addrs:
+      - localhost:26379
+      - localhost:26380
+      - localhost:26381

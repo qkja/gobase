@@ -45,17 +45,18 @@ go test ./errors -run TestRegistryContainsAllConsts
 
 ### 配置系统（`config/`，最值得理解的部分）
 
-- 从 CWD 加载 `application.{yaml,yml,properties,json,toml}`；支持 Spring profile，通过 `base.profiles.active`（环境变量优先于文件）加载 `application-{profile}.ext`。还会追加 `./config/application-default.yml`（可用环境变量 `base.config.cm.path` 覆盖）。
-- **双存储**：`ApplicationProperty` 内部有 `ValueMap`（扁平点号键，如 `"base.server.port"`）和 `ValueDeepMap`（嵌套 map）。所有 loader 都归一化写入两者；`SetValue` 通过 properties↔yaml 往返转换保持二者同步。
-- **两种取值方式：** `config.GetValueString/Int/Bool/...Default(key)`（实时、点号键）与 `config.GetValueObject("base", &BaseCfg)`（结构体绑定、快照、非实时）。README 明确推荐实时 getter。`config/base_properties.go` 中的 `BaseCfg`/`RedisCfg`/`EtcdCfg`/`EmqxCfg` 在加载时一次性填充。
+- 从 CWD 加载 `application.{yaml,yml,properties,json,toml}`；支持 Spring profile，通过 `profiles.active`（环境变量优先于文件）加载 `application-{profile}.ext`。还会追加 `./config/application-default.yml`（可用环境变量 `config.additional-location` 覆盖）。
+- **环境变量契约：** 外部环境变量随 `base.` 前缀移除同步改名：`base.profiles.active` → `profiles.active`、`base.config.additional-location` → `config.additional-location`。
+- **双存储**：`ApplicationProperty` 内部有 `ValueMap`（扁平点号键，如 `"server.port"`）和 `ValueDeepMap`（嵌套 map）。所有 loader 都归一化写入两者；`SetValue` 通过 properties↔yaml 往返转换保持二者同步。
+- **两种取值方式：** `config.GetValueString/Int/Bool/...Default(key)`（实时、点号键）与 `config.GetValueObject("", &BaseCfg)`（结构体绑定、快照、非实时）。README 明确推荐实时 getter。`config/base_properties.go` 中的 `BaseCfg`/`RedisCfg`/`EtcdCfg`/`EmqxCfg` 在加载时一次性填充。
 - **热加载：** `config/watch.go` 每秒轮询 `./config/application.toml`（size+ModTime 快速跳过、sha256 确认——因为 k8s ConfigMap 的 symlink 原子替换会让 inotify 失效）。整文件重载时只发布一个**合成** `appconfig.reload` 事件（Key=`"appconfig.reload"`），不产生逐 key 事件；HTTP `config/update` 接口的逐 key 变更则按 key 发布普通 `ConfigChangeEvent`。需要支持热加载的新特性必须处理 `appconfig.reload`（参考 `logger.ConfigChangeListener`）。
 - 配置变更经 `listener.PublishEvent(listener.ConfigChangeEvent{Key, Value})` 广播；用 `listener.AddListener(listener.EventOfConfigChange, fn)` 订阅。
 
 ### Web 服务（`server/`）
 
 - `server.Run()` 启动 gin；`server.Get/Post/Put/Delete/All/GetPost(path, handler)` 注册路由。`server.init()` 会调用 `config.LoadConfig()`。
-- 路由自动加前缀：`/{base.api.prefix}/{api-module}/{path}`（见 `getPathAppendApiModel`）。`api-module` 是顶层配置键；路径本身以 `api` 开头时按原样使用。
-- 内置中间件链：CORS、`gin.Recovery()`+`ErrHandler()`、`RequestSaveHandler()`（把请求头写入 `store`，请求结束时 `store.Clean()`）、`rsp.ResponseHandler()`。可选端点由配置开关控制：健康检查（`base.endpoint.health.enable`）、配置查看/修改（`base.endpoint.config.enable`）、bean 调试（`base.endpoint.bean.enable`）、pprof（`base.server.gin.pprof.enable`）、swagger（`base.swagger.enable`），均挂在 `/{prefix}/{module}/...` 下。
+- 路由自动加前缀：`/{api.prefix}/{api-module}/{path}`（见 `getPathAppendApiModel`）。`api-module` 是顶层配置键；路径本身以 `api` 开头时按原样使用。
+- 内置中间件链：CORS、`gin.Recovery()`+`ErrHandler()`、`RequestSaveHandler()`（把请求头写入 `store`，请求结束时 `store.Clean()`）、`rsp.ResponseHandler()`。可选端点由配置开关控制：健康检查（`endpoint.health.enable`）、配置查看/修改（`endpoint.config.enable`）、bean 调试（`endpoint.bean.enable`）、pprof（`server.gin.pprof.enable`）、swagger（`swagger.enable`），均挂在 `/{prefix}/{module}/...` 下。
 - **基于请求头的 API 版本化：** `server.GetWith(path, header, versionName, handler)` 可为同一路径注册多个 handler，按请求头取值匹配分发（`api_version.go` 中的 `ApiPath`/`ApiVersion`）。
 - 响应使用 `server/rsp`：`SuccessOfStandard`/`FailedOfStandard` 产出 `{"code":0,"data":...,"message":"success"}`，其中 `code` 为 **int**，并带 `isc-biz-code`/`isc-biz-message` 响应头。另有泛型 `DataResponse[T]`、`PagedResponse[T]`，以及分页用 `req.PageRequest[T]`。
 
@@ -66,9 +67,9 @@ go test ./errors -run TestRegistryContainsAllConsts
 
 ### 日志（`logger/`）
 
-- 基于 logrus 的**分组**日志：`logger.Group("name")` 返回带独立级别的分组 logger（`base.logger.group.<name>.level`，缺省回退 `base.logger.level`）。包级 `logger.Info/Warn/Error/...` 走 `root` 分组。每个分组通过 file-rotatelogs + lfshook 按级别写文件到 `base.logger.home`（默认 `./logs/`）。
+- 基于 logrus 的**分组**日志：`logger.Group("name")` 返回带独立级别的分组 logger（`logger.group.<name>.level`，缺省回退 `logger.level`）。包级 `logger.Info/Warn/Error/...` 走 `root` 分组。每个分组通过 file-rotatelogs + lfshook 按级别写文件到 `logger.home`（默认 `./logs/`）。
 - 日志行通过自定义 `StandardFormatter` 内嵌 `store` 中的 `traceId`/`userId`，链路上下文自动带进日志。
-- `logger.DebugWithTenant(tenantID, ...)` 仅在全局级别为 debug/trace、或该租户在 `base.logger.debug_tenant_ids` 中时才输出——用于生产环境的按租户调试。
+- `logger.DebugWithTenant(tenantID, ...)` 仅在全局级别为 debug/trace、或该租户在 `logger.debug_tenant_ids` 中时才输出——用于生产环境的按租户调试。
 - 级别热更新在 `ConfigChangeListener` 中处理；收到 `appconfig.reload` 时重读配置并应用到已创建的分组（不会新建分组）。
 
 ### 业务错误（`errors/` 与 `server/rsp` 是两层，别混淆）
@@ -89,7 +90,7 @@ go test ./errors -run TestRegistryContainsAllConsts
 ## 约定与陷阱
 
 - **`isc` 优先：** 任何字符串/类型/map/JSON 转换先查 `isc` 再看标准库。跨包代码依赖 `isc.ToString`/`ObjectToJson`/`DataToObject`/`YamlToProperties`。
-- **框架配置键都是 `base.*`**（`base.server.enable`、`base.logger.level`、`base.endpoint.*`）；`api-module` 是顶层键，控制 URL 模块段。
+- **框架配置键都是顶层键**（`server.enable`、`logger.level`、`endpoint.*`）；`api-module` 是顶层键，控制 URL 模块段。
 - **中文注释与消息是常态**；注册表中的默认错误消息保持中英双语（zh + en）。
 - **请求作用域结束必须 `store.Clean()`**；server 中间件会做，但其它填充 `store` 的地方也要记得。
 - 配置结构体绑定（`GetValueObject`）是快照——需要响应热加载的场景不要用它，改用实时 getter 或监听配置变更事件。
