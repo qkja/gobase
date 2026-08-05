@@ -27,7 +27,7 @@ func New(code string) *BizError {
 	if !ok {
 		return &BizError{Code: code, GRPCCode: codes.Unknown}
 	}
-	return &BizError{Code: code, Message: Message(code, LangZh), GRPCCode: m.grpc}
+	return &BizError{Code: code, Message: lookupMessage(code, LangZh), GRPCCode: m.grpc}
 }
 
 // Newf 创建业务错误并格式化消息
@@ -128,18 +128,18 @@ const (
 	LangEn = "en-US"
 )
 
-// message 返回最终消息：优先 Message，其次注册表默认（中文）
+// message 返回最终消息：优先自定义 Message，其次 i18n 默认（中文）
 func (e *BizError) message() string {
 	if e.Message != "" {
 		return e.Message
 	}
-	return Message(e.Code, LangZh)
+	return lookupMessage(e.Code, LangZh)
 }
 
-// Message 返回错误码 code 在指定语言下的默认消息。
-// 消息由 i18n 唯一提供（嵌入默认 + 服务 i18n/<lang>.po 按 code 键覆盖）；
+// lookupMessage 内部消息查找：由 i18n 唯一提供（嵌入默认 + 服务 i18n/<lang>.po 按 code 键覆盖）。
 // lang 取 LangZh / LangEn；未配置的 code 兜底为"未知错误"（CodeUnknown）。
-func Message(code, lang string) string {
+// 业务不直接调用——通过 errors.New/ErrXxx 创建时消息已随 BizError 带上（err.GetMessage()）。
+func lookupMessage(code, lang string) string {
 	if s, ok := i18n.Lookup(lang, code); ok {
 		return s
 	}

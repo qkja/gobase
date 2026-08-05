@@ -18,7 +18,6 @@ import (
 	"github.com/qkja/gobase/config"
 	"github.com/qkja/gobase/constants"
 	"github.com/qkja/gobase/discovery"
-	"github.com/qkja/gobase/errors"
 	"github.com/qkja/gobase/isc"
 	"github.com/qkja/gobase/store"
 	"github.com/qkja/gobase/tenant"
@@ -47,9 +46,9 @@ func Dial(ctx context.Context, svcName string) (*grpc.ClientConn, error) {
 	return actual.(*grpc.ClientConn), nil
 }
 
-// Call 通用 gRPC 调用：解析地址→取连接→注入 tenant/trace metadata→套超时→执行 fn→解包业务错误。
+// Call 通用 gRPC 调用：解析地址→取连接→注入 tenant/trace metadata→套超时→执行 fn。
 // fn 收到的 ctx 已注入 outgoing metadata 并带上 grpc.timeout 超时（毫秒，默认 5000）。
-// 下游以 gobase BizError / ErrorInfo 表达的业务错误会被还原为 *errors.BizError 返回。
+// 返回 fn 的原始结果/错误（不做跨进程业务码解包）。
 func Call[T any](ctx context.Context, svcName string, fn func(ctx context.Context, conn *grpc.ClientConn) (T, error)) (T, error) {
 	conn, err := Dial(ctx, svcName)
 	if err != nil {
@@ -65,20 +64,7 @@ func Call[T any](ctx context.Context, svcName string, fn func(ctx context.Contex
 		defer cancel()
 	}
 
-	resp, err := fn(callCtx, conn)
-	if err != nil {
-		if be, ok := errors.FromError(err); ok {
-			var zero T
-			return zero, be
-		}
-		return resp, err
-	}
-	return resp, nil
-}
-
-// FromGRPCError 从 gRPC 错误解包 gobase 业务错误（复用 errors.FromError）。
-func FromGRPCError(err error) (*errors.BizError, bool) {
-	return errors.FromError(err)
+	return fn(callCtx, conn)
 }
 
 // injectMetadata 将租户上下文与 store 中的 trace 头写入 outgoing gRPC metadata。

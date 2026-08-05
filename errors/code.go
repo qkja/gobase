@@ -197,14 +197,8 @@ var registry = map[string]errorMeta{
 	CodeUserDisableFailed:       {grpc: codes.Internal},
 }
 
-// Register 注册自定义业务错误码（业务段位 2000+ 用）。
-// 必须在业务包的 init() 阶段调用；禁止在请求处理路径并发调用。
-//
-// Deprecated: msgZh/msgEn 参数已由 i18n 唯一提供（见 Message / i18n 包），本函数忽略二者，
-// 仅登记 code→grpc 映射。消息文案请配置到服务自己的 i18n/<lang>.po（键为 code）。
-func Register(code, msgZh, msgEn string, grpcCode codes.Code) {
-	registry[code] = errorMeta{grpc: grpcCode}
-}
+// 注意：业务服务不允许自定义错误码——错误码统一由 gobase 定义（仅用内置码），
+// 禁止通过 Register 扩充注册表。
 
 // 目录域便捷构造函数
 func ErrDirNotFound() *BizError          { return New(CodeDirNotFound) }
