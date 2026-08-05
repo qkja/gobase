@@ -43,6 +43,8 @@ go test ./errors -run TestRegistryContainsAllConsts
 - **`listener/`** —— 事件发布订阅（服务生命周期 + 配置变更事件）。
 - **`bean/`** —— 运行时对象注册表，用于线上调试（通过 HTTP 端点做属性查看/修改、方法调用）。
 - **`validate/`** —— 结构体标签校验（`match:"..."` 标签 + `validate.Check(obj)`）。手机号 `match:"model=phone"` 默认中国大陆号，可 `model=phone:US` / `model=phone:ZZ`（ZZ 为国际号码、须带国家码）指定国家/地区，走 google/libphonenumber（`nyaruka/phonenumbers`）；邮箱 `match:"model=mail"` 走 govalidator；另有 `model=ip`/`fixed_phone`/`id_card` 及 `value`/`range`/`regex`/`condition`/`isBlank`/`customize` 等匹配器。
+- **`infra/`** —— 基础设施统一初始化入口。`infra.Init()` 按配置一次性初始化 MongoDB（`database.mongodb.uri` 存在时，复用 `db.MongoSet`）+ Redis（`redis.enable=true` 时，复用 `extend/redis.NewClient`），未启用组件为 nil；另有 `infra.InfraSet` 供 wire 装配（`wire.NewSet(NewInfra, db.MongoSet, extendredis.NewClient)`）。
+- **`grpcclient/`** —— 服务间 gRPC 调用统一封装。`grpcclient.Dial(svcName)` / `Call[T](ctx, svcName, fn)`：经 `discovery.GetAddress` 寻址 + 按服务名连接池 + `grpc.timeout` 超时（毫秒，默认 5000）+ 把 tenant/trace 写入 gRPC metadata（键名统一小写）+ `errors.FromError` 把下游 BizError/ErrorInfo 解包回业务错误。前置：先 `discovery.Init(cfgDir)` 与加载配置。新服务优先用本包，勿再自建连接池/转换器。
 
 ### 配置系统（`config/`，最值得理解的部分）
 
