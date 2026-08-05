@@ -137,3 +137,63 @@ func TestModelIpAddress(t *testing.T) {
 	result, err = validate.Check(value)
 	Equal(t, err, "属性 Data 的值 192.123.231.adf 没有命中只允许类型 [ip]", result, false)
 }
+
+// 国际手机号：按国家/地区校验（google/libphonenumber）
+type ValueModelPhoneUS struct {
+	Data string `match:"model=phone:US"`
+}
+
+type ValueModelPhoneZZ struct {
+	Data string `match:"model=phone:ZZ"`
+}
+
+// 手机号：指定国家/地区（model=phone:US）
+func TestModelPhoneLocale(t *testing.T) {
+	var value ValueModelPhoneUS
+	var result bool
+	var err string
+
+	// 美国号 → 通过
+	value = ValueModelPhoneUS{Data: "2015550123"}
+	result, err = validate.Check(value)
+	TrueErr(t, result, err)
+
+	// 大陆号在 US 下 → 拒绝
+	value = ValueModelPhoneUS{Data: "13800138000"}
+	result, err = validate.Check(value)
+	Equal(t, err, "属性 Data 的值 13800138000 没有命中只允许类型 [phone]", result, false)
+}
+
+// 手机号：国际号码（model=phone:ZZ，号码须带国家码）
+func TestModelPhoneInternational(t *testing.T) {
+	var value ValueModelPhoneZZ
+	var result bool
+	var err string
+
+	// 带国家码 → 通过
+	value = ValueModelPhoneZZ{Data: "+8613800138000"}
+	result, err = validate.Check(value)
+	TrueErr(t, result, err)
+
+	// 不带国家码 → 拒绝
+	value = ValueModelPhoneZZ{Data: "13800138000"}
+	result, err = validate.Check(value)
+	Equal(t, err, "属性 Data 的值 13800138000 没有命中只允许类型 [phone]", result, false)
+}
+
+// 邮箱边界（govalidator.IsEmail）
+func TestModelMailBoundary(t *testing.T) {
+	var value ValueModelEmailEntity
+	var result bool
+	var err string
+
+	// 合法邮箱 → 通过
+	value = ValueModelEmailEntity{Data: "abc@example.com"}
+	result, err = validate.Check(value)
+	TrueErr(t, result, err)
+
+	// 缺少域名 → 拒绝
+	value = ValueModelEmailEntity{Data: "abc"}
+	result, err = validate.Check(value)
+	Equal(t, err, "属性 Data 的值 abc 没有命中只允许类型 [mail]", result, false)
+}

@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/antonmedv/expr v1.9.0
+	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/gin-contrib/pprof v1.3.0
@@ -19,6 +20,7 @@ require (
 	github.com/lib/pq v1.10.2
 	github.com/magiconair/properties v1.8.5
 	github.com/mattn/go-sqlite3 v1.14.15
+	github.com/nyaruka/phonenumbers v1.0.0
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/qustavo/sqlhooks/v2 v2.1.0
