@@ -11,6 +11,14 @@ import (
 	"github.com/qkja/gobase/isc"
 )
 
+// 语言标记，全仓库统一使用，其他服务可直接引用。
+const (
+	// LangZh 简体中文
+	LangZh = "zh-CN"
+	// LangEn 英文
+	LangEn = "en-US"
+)
+
 //go:embed default/*.po
 var embeddedPOs embed.FS
 

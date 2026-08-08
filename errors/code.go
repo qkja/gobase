@@ -1,18 +1,15 @@
 package errors
 
-import "google.golang.org/grpc/codes"
-
 // 业务错误码段位划分：
 //
-//	0         成功（沿袭既有 wire 约定 "0"，见 proto 响应与 server/rsp）
-//	1001-1999 通用错误码（本包定义）
-//	2000+     业务错误码（由业务模块 init 阶段通过 Register 注册）
-//	1999      未知错误（兜底，用于 FromError 未识别时）
+//	"0"         成功
+//	"1001"-"1999" 通用错误码
+//	"2000"-"2999" 目录域
+//	"3000"-"3999" 组织架构
+//	"4000"-"4999" 用户
+//	"1999"      未知错误（兜底）
 //
-// 通用段位错误码编号分配：
-//
-//	1001 系统内部错误 | 1002 参数无效 | 1003 资源不存在 | 1004 未认证
-//	1005 无权限 | 1006 请求超时 | 1007 已存在 | 1008 依赖冲突 | 1009 请求过于频繁
+// 全部错误码由 gobase 内置定义，业务直接使用，禁止自定义/注册新码。
 
 /* 成功 */
 const (
@@ -132,112 +129,64 @@ const (
 	CodeUserDisableFailed = "4014"
 )
 
-// errorMeta 错误码元数据：对应的 gRPC 状态码。
-// 消息文案不再在此存储——由 i18n 唯一提供（嵌入默认 + 服务 i18n/<lang>.po 按 code 键覆盖），见 i18n 包。
-type errorMeta struct {
-	grpc codes.Code
-}
+// 通用便捷错误实例（全局变量，包初始化时填充，线程安全）
+var (
+	ErrInternal          = New(CodeInternal)
+	ErrInvalidArgument   = New(CodeInvalidArgument)
+	ErrNotFound          = New(CodeNotFound)
+	ErrUnauthenticated   = New(CodeUnauthenticated)
+	ErrPermissionDenied  = New(CodePermissionDenied)
+	ErrTimeout           = New(CodeTimeout)
+	ErrAlreadyExists     = New(CodeAlreadyExists)
+	ErrConflict          = New(CodeConflict)
+	ErrResourceExhausted = New(CodeResourceExhausted)
+	ErrUnknown           = New(CodeUnknown)
+)
 
-// registry 错误码注册表：code -> gRPC 映射
-//
-// 用 map 而非 switch，理由：
-//  1. FromError 需要「字符串 -> 元数据」的反查，map 天然支持；
-//  2. 业务段位可通过 Register 在 init 阶段扩展，switch 必须改本包源码；
-//  3. 本表仅 init 阶段填充、之后只读，无并发问题。
-var registry = map[string]errorMeta{
-	CodeOK:                {grpc: codes.OK},
-	CodeInternal:          {grpc: codes.Internal},
-	CodeInvalidArgument:   {grpc: codes.InvalidArgument},
-	CodeNotFound:          {grpc: codes.NotFound},
-	CodeUnauthenticated:   {grpc: codes.Unauthenticated},
-	CodePermissionDenied:  {grpc: codes.PermissionDenied},
-	CodeTimeout:           {grpc: codes.DeadlineExceeded},
-	CodeAlreadyExists:     {grpc: codes.AlreadyExists},
-	CodeConflict:          {grpc: codes.FailedPrecondition},
-	CodeResourceExhausted: {grpc: codes.ResourceExhausted},
-	CodeUnknown:           {grpc: codes.Unknown},
-	// 目录域（2000-2999）
-	CodeDirNotFound:        {grpc: codes.NotFound},
-	CodeDirDomainExists:    {grpc: codes.AlreadyExists},
-	CodeDirAlreadyDisabled: {grpc: codes.FailedPrecondition},
-	CodeDirAlreadyEnabled:  {grpc: codes.FailedPrecondition},
-	CodeDirNotEmpty:        {grpc: codes.FailedPrecondition},
-	CodeDirDisabled:        {grpc: codes.FailedPrecondition},
-	CodeDirCreateFailed:    {grpc: codes.Internal},
-	CodeDirUpdateFailed:    {grpc: codes.Internal},
-	CodeDirGetFailed:       {grpc: codes.Internal},
-	CodeDirDeleteFailed:    {grpc: codes.Internal},
-	// 组织架构（3000-3999）
-	CodeOrgNotFound:        {grpc: codes.NotFound},
-	CodeOrgCreateFailed:    {grpc: codes.Internal},
-	CodeOrgParentNotFound:  {grpc: codes.NotFound},
-	CodeOrgCycle:           {grpc: codes.FailedPrecondition},
-	CodeOrgHasChildren:     {grpc: codes.FailedPrecondition},
-	CodeOrgHasUsers:        {grpc: codes.FailedPrecondition},
-	CodeOrgCrossDirectory:  {grpc: codes.FailedPrecondition},
-	CodeOrgLevelExceeded:   {grpc: codes.FailedPrecondition},
-	CodeOrgUpdateFailed:    {grpc: codes.Internal},
-	CodeOrgGetFailed:       {grpc: codes.Internal},
-	CodeOrgDeleteFailed:    {grpc: codes.Internal},
-	CodeOrgMoveFailed:      {grpc: codes.Internal},
-	// 用户（4000-4999）
-	CodeUserNotFound:            {grpc: codes.NotFound},
-	CodeUserUsernameExists:      {grpc: codes.AlreadyExists},
-	CodeUserAlreadyDisabled:     {grpc: codes.FailedPrecondition},
-	CodeUserAlreadyEnabled:      {grpc: codes.FailedPrecondition},
-	CodeUserOrgAlreadySecondary: {grpc: codes.FailedPrecondition},
-	CodeUserOrgIsPrimary:        {grpc: codes.FailedPrecondition},
-	CodeUserOrgNotSecondary:     {grpc: codes.FailedPrecondition},
-	CodeUserPrimaryOrgNotFound:  {grpc: codes.NotFound},
-	CodeUserCreateFailed:        {grpc: codes.Internal},
-	CodeUserUpdateFailed:        {grpc: codes.Internal},
-	CodeUserGetFailed:           {grpc: codes.Internal},
-	CodeUserDeleteFailed:        {grpc: codes.Internal},
-	CodeUserEnableFailed:        {grpc: codes.Internal},
-	CodeUserDisableFailed:       {grpc: codes.Internal},
-}
+// 目录域便捷错误实例
+var (
+	ErrDirNotFound        = New(CodeDirNotFound)
+	ErrDirDomainExists    = New(CodeDirDomainExists)
+	ErrDirAlreadyDisabled = New(CodeDirAlreadyDisabled)
+	ErrDirAlreadyEnabled  = New(CodeDirAlreadyEnabled)
+	ErrDirNotEmpty        = New(CodeDirNotEmpty)
+	ErrDirDisabled        = New(CodeDirDisabled)
+	ErrDirCreateFailed    = New(CodeDirCreateFailed)
+	ErrDirUpdateFailed    = New(CodeDirUpdateFailed)
+	ErrDirGetFailed       = New(CodeDirGetFailed)
+	ErrDirDeleteFailed    = New(CodeDirDeleteFailed)
+)
 
-// 注意：业务服务不允许自定义错误码——错误码统一由 gobase 定义（仅用内置码），
-// 禁止通过 Register 扩充注册表。
+// 组织架构便捷错误实例
+var (
+	ErrOrgNotFound       = New(CodeOrgNotFound)
+	ErrOrgCreateFailed   = New(CodeOrgCreateFailed)
+	ErrOrgParentNotFound = New(CodeOrgParentNotFound)
+	ErrOrgCycle          = New(CodeOrgCycle)
+	ErrOrgHasChildren    = New(CodeOrgHasChildren)
+	ErrOrgHasUsers       = New(CodeOrgHasUsers)
+	ErrOrgCrossDirectory = New(CodeOrgCrossDirectory)
+	ErrOrgLevelExceeded  = New(CodeOrgLevelExceeded)
+	ErrOrgUpdateFailed   = New(CodeOrgUpdateFailed)
+	ErrOrgGetFailed      = New(CodeOrgGetFailed)
+	ErrOrgDeleteFailed   = New(CodeOrgDeleteFailed)
+	ErrOrgMoveFailed     = New(CodeOrgMoveFailed)
+)
 
-// 目录域便捷构造函数
-func ErrDirNotFound() *BizError          { return New(CodeDirNotFound) }
-func ErrDirDomainExists() *BizError      { return New(CodeDirDomainExists) }
-func ErrDirAlreadyDisabled() *BizError   { return New(CodeDirAlreadyDisabled) }
-func ErrDirAlreadyEnabled() *BizError    { return New(CodeDirAlreadyEnabled) }
-func ErrDirNotEmpty() *BizError          { return New(CodeDirNotEmpty) }
-func ErrDirDisabled() *BizError          { return New(CodeDirDisabled) }
-func ErrDirCreateFailed() *BizError      { return New(CodeDirCreateFailed) }
-func ErrDirUpdateFailed() *BizError      { return New(CodeDirUpdateFailed) }
-func ErrDirGetFailed() *BizError         { return New(CodeDirGetFailed) }
-func ErrDirDeleteFailed() *BizError      { return New(CodeDirDeleteFailed) }
-
-// 组织架构便捷构造函数
-func ErrOrgNotFound() *BizError       { return New(CodeOrgNotFound) }
-func ErrOrgCreateFailed() *BizError   { return New(CodeOrgCreateFailed) }
-func ErrOrgParentNotFound() *BizError { return New(CodeOrgParentNotFound) }
-func ErrOrgCycle() *BizError          { return New(CodeOrgCycle) }
-func ErrOrgHasChildren() *BizError    { return New(CodeOrgHasChildren) }
-func ErrOrgHasUsers() *BizError       { return New(CodeOrgHasUsers) }
-func ErrOrgCrossDirectory() *BizError { return New(CodeOrgCrossDirectory) }
-func ErrOrgLevelExceeded() *BizError  { return New(CodeOrgLevelExceeded) }
-func ErrOrgUpdateFailed() *BizError   { return New(CodeOrgUpdateFailed) }
-func ErrOrgGetFailed() *BizError      { return New(CodeOrgGetFailed) }
-func ErrOrgDeleteFailed() *BizError   { return New(CodeOrgDeleteFailed) }
-func ErrOrgMoveFailed() *BizError     { return New(CodeOrgMoveFailed) }
-
-// 用户便捷构造函数
-func ErrUserNotFound() *BizError            { return New(CodeUserNotFound) }
-func ErrUserUsernameExists() *BizError      { return New(CodeUserUsernameExists) }
-func ErrUserAlreadyDisabled() *BizError     { return New(CodeUserAlreadyDisabled) }
-func ErrUserAlreadyEnabled() *BizError      { return New(CodeUserAlreadyEnabled) }
-func ErrUserOrgAlreadySecondary() *BizError { return New(CodeUserOrgAlreadySecondary) }
-func ErrUserOrgIsPrimary() *BizError        { return New(CodeUserOrgIsPrimary) }
-func ErrUserOrgNotSecondary() *BizError     { return New(CodeUserOrgNotSecondary) }
-func ErrUserPrimaryOrgNotFound() *BizError  { return New(CodeUserPrimaryOrgNotFound) }
-func ErrUserCreateFailed() *BizError        { return New(CodeUserCreateFailed) }
-func ErrUserUpdateFailed() *BizError        { return New(CodeUserUpdateFailed) }
-func ErrUserGetFailed() *BizError           { return New(CodeUserGetFailed) }
-func ErrUserDeleteFailed() *BizError        { return New(CodeUserDeleteFailed) }
-func ErrUserEnableFailed() *BizError        { return New(CodeUserEnableFailed) }
-func ErrUserDisableFailed() *BizError       { return New(CodeUserDisableFailed) }
+// 用户便捷错误实例
+var (
+	ErrUserNotFound            = New(CodeUserNotFound)
+	ErrUserUsernameExists      = New(CodeUserUsernameExists)
+	ErrUserAlreadyDisabled     = New(CodeUserAlreadyDisabled)
+	ErrUserAlreadyEnabled      = New(CodeUserAlreadyEnabled)
+	ErrUserOrgAlreadySecondary = New(CodeUserOrgAlreadySecondary)
+	ErrUserOrgIsPrimary        = New(CodeUserOrgIsPrimary)
+	ErrUserOrgNotSecondary     = New(CodeUserOrgNotSecondary)
+	ErrUserPrimaryOrgNotFound  = New(CodeUserPrimaryOrgNotFound)
+	ErrUserCreateFailed        = New(CodeUserCreateFailed)
+	ErrUserUpdateFailed        = New(CodeUserUpdateFailed)
+	ErrUserGetFailed           = New(CodeUserGetFailed)
+	ErrUserDeleteFailed        = New(CodeUserDeleteFailed)
+	ErrUserEnableFailed        = New(CodeUserEnableFailed)
+	ErrUserDisableFailed       = New(CodeUserDisableFailed)
+)

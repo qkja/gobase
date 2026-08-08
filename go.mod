@@ -35,6 +35,8 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2
 	go.etcd.io/etcd/client/v3 v3.5.6
 	go.mongodb.org/mongo-driver v1.17.9
+	github.com/smartystreets/goconvey v1.8.1
+	github.com/agiledragon/gomonkey/v2 v2.13.0
 	go.uber.org/zap v1.17.0
 	golang.org/x/sys v0.23.0
 	golang.org/x/text v0.17.0
