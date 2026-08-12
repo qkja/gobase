@@ -18,9 +18,8 @@ import (
 	"github.com/qkja/gobase/config"
 	"github.com/qkja/gobase/constants"
 	"github.com/qkja/gobase/discovery"
-	"github.com/qkja/gobase/isc"
-	"github.com/qkja/gobase/store"
 	"github.com/qkja/gobase/tenant"
+	"github.com/qkja/gobase/trace"
 )
 
 // connPool 按服务名缓存连接；*grpc.ClientConn 并发安全可复用，内部自动重连。
@@ -82,16 +81,19 @@ func injectMetadata(ctx context.Context) context.Context {
 			md.Append(strings.ToLower(constants.TENANT_HEAD_UI_LANGUAGE), info.UILanguage)
 		}
 	}
-	for _, k := range []string{
-		constants.TRACE_HEAD_ID,
-		constants.TRACE_HEAD_RPC_ID,
-		constants.TRACE_HEAD_SAMPLED,
-		constants.TRACE_HEAD_USER_ID,
-		constants.TRACE_HEAD_USER_NAME,
-		constants.TRACE_HEAD_REMOTE_APPNAME,
-	} {
-		if vs := isc.ToString(store.Get(k)); vs != "" {
-			md.Append(strings.ToLower(k), vs)
+	if info := trace.GetInfo(ctx); info != nil {
+		pairs := []struct{ k, v string }{
+			{constants.TRACE_HEAD_ID, info.TraceID},
+			{constants.TRACE_HEAD_RPC_ID, info.RPCID},
+			{constants.TRACE_HEAD_SAMPLED, info.Sampled},
+			{constants.TRACE_HEAD_USER_ID, info.UserID},
+			{constants.TRACE_HEAD_USER_NAME, info.UserName},
+			{constants.TRACE_HEAD_REMOTE_APPNAME, config.GetValueStringDefault("application.name", "")},
+		}
+		for _, p := range pairs {
+			if p.v != "" {
+				md.Append(strings.ToLower(p.k), p.v)
+			}
 		}
 	}
 	return metadata.NewOutgoingContext(ctx, md)

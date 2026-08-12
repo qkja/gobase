@@ -1,547 +1,145 @@
+// Package logger 提供基于 logrus 的统一日志封装：
+// 分组、文件滚动、级别热更新、彩色输出、调用位置、ctx trace 前缀。
+//
+// 基本用法：
+//
+//	logger.Info("hello %s", "world")
+//	logger.ErrorCtx(ctx, "call failed: %v", err)
+//	logger.Group("orm").Debugf("[SQL] %s", sql)
 package logger
 
 import (
-	"bytes"
-	"fmt"
-	"os"
-	"runtime"
-	"slices"
 	"strings"
-	"sync"
-	"time"
 
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/qkja/gobase/config"
-	"github.com/qkja/gobase/constants"
-	"github.com/qkja/gobase/isc"
-	"github.com/qkja/gobase/listener"
-	"github.com/qkja/gobase/store"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	white  = 29
-	black  = 30
-	red    = 31
-	green  = 32
-	yellow = 33
-	purple = 35
-	blue   = 36
-	gray   = 37
+// 包级全局状态。
+var (
+	loggerMap  map[string]*logrus.Logger
+	rootLogger *logrus.Logger
+	gColor     bool
 )
 
-var gColor = false
-var loggerMap map[string]*logrus.Logger
-var rotateMap map[string]*rotatelogs.RotateLogs
-var rootLogger *logrus.Logger
-var tenantDebugLogger *logrus.Logger
-var debugTenantIDs []string
-var debugTenantLoaded = false
-
 func init() {
-	_loggerMap := map[string]*logrus.Logger{}
-	loggerMap = _loggerMap
-	_rotateMap := map[string]*rotatelogs.RotateLogs{}
-	rotateMap = _rotateMap
-	rootLogger = Group("root")
-	// 租户级 debug 专用 logger：始终 Debug 级别，由 DebugWithTenant 的租户检查控制输出
-	tenantDebugLogger = Group("tenant_debug")
+	loggerMap = map[string]*logrus.Logger{}
+	rootLogger = getOrCreate("root")
+	// 租户级 debug 专用 logger：恒为 DebugLevel，由 DebugTenant 的租户检查控制输出
+	tenantDebugLogger = newLogger("tenant_debug")
 	tenantDebugLogger.SetLevel(logrus.DebugLevel)
-
-	_gColor := config.GetValueBoolDefault("logger.color.enable", false)
-	gColor = _gColor
+	gColor = config.GetValueBoolDefault("logger.color.enable", false)
 }
 
-// reloadDebugTenants 读取配置 logger.debug_tenant_ids
-func reloadDebugTenants() {
-	arr := config.GetValueArray("logger.debug_tenant_ids")
-	debugTenantIDs = make([]string, 0, len(arr))
-	for _, v := range arr {
-		if s, ok := v.(string); ok && s != "" {
-			debugTenantIDs = append(debugTenantIDs, s)
-		}
+// getOrCreate 统一获取或创建分组 logger（合并了旧的 Group/doGroup 重复逻辑）。
+func getOrCreate(groupName string) *logrus.Logger {
+	if l, ok := loggerMap[groupName]; ok {
+		return l
 	}
-	debugTenantLoaded = true
+	l := newLogger(groupName)
+	loggerMap[groupName] = l
+	return l
 }
 
-// debugTenants 懒加载获取 debug 租户列表
-// 配置文件可能在 logger 包 init 之后才加载，故首次使用时再读取
-func debugTenants() []string {
-	if !debugTenantLoaded {
-		reloadDebugTenants()
-	}
-	return debugTenantIDs
-}
-
-// debugTenantEnabled 判断指定租户是否开启 debug
-// 满足任一条件：
-//  1. 全局级别为 debug/trace
-//  2. tenantID 在 logger.debug_tenant_ids 列表中
-func debugTenantEnabled(tenantID string) bool {
-	// 全局 debug：级别为 debug/trace 时（数值 >= DebugLevel）
-	if rootLogger.IsLevelEnabled(logrus.DebugLevel) {
-		return true
-	}
-	if tenantID == "" {
-		return false
-	}
-	return slices.Contains(debugTenants(), tenantID)
-}
-
-func Group(groupNames ...string) *logrus.Logger {
-	var resultLogger *logrus.Logger
-	groupNamesOfUnContain := []string{}
-	for _, groupName := range groupNames {
-		if logger, exit := loggerMap[groupName]; exit {
-			resultLogger = logger
-		} else {
-			groupNamesOfUnContain = append(groupNamesOfUnContain, groupName)
-		}
-	}
-
-	if resultLogger != nil {
-		return resultLogger
-	} else {
-		resultLogger = logrus.New()
-		resultLogger.SetReportCaller(true)
-		formatters := &StandardFormatter{}
-		resultLogger.Formatter = formatters
-
-		loggerDir := config.GetValueStringDefault("logger.home", "./logs/")
-		resultLogger.AddHook(lfshook.NewHook(lfshook.WriterMap{
-			logrus.DebugLevel: rotateLogWithCache(loggerDir, "debug"),
-			logrus.InfoLevel:  rotateLogWithCache(loggerDir, "info"),
-			logrus.WarnLevel:  rotateLogWithCache(loggerDir, "warn"),
-			logrus.ErrorLevel: rotateLogWithCache(loggerDir, "error"),
-			logrus.PanicLevel: rotateLogWithCache(loggerDir, "panic"),
-			logrus.FatalLevel: rotateLogWithCache(loggerDir, "fatal"),
-		}, formatters))
-	}
-
-	// 值最大的级别，对应的level最小，比如Debug对应的数值比Info要大
-	maxValueLevel := logrus.PanicLevel
-	for _, groupName := range groupNamesOfUnContain {
-		var finalGroupLevel string
-		rootLevel := config.GetValueStringDefault("logger.level", "info")
-		groupLevel := config.GetValueString("logger.group." + groupName + ".level")
-		if groupLevel != "" {
-			finalGroupLevel = groupLevel
-		} else {
-			finalGroupLevel = rootLevel
-		}
-
-		lgLevel, err := logrus.ParseLevel(finalGroupLevel)
-		if err != nil {
-			lgLevel = logrus.InfoLevel
-		}
-
-		if lgLevel > maxValueLevel {
-			maxValueLevel = lgLevel
-		}
-	}
-
-	resultLogger.SetLevel(maxValueLevel)
-
-	for _, groupName := range groupNamesOfUnContain {
-		loggerMap[groupName] = resultLogger
-	}
-	return resultLogger
-}
-
-func doGroup(groupName string) *logrus.Logger {
-	if groupName == "" {
-		return rootLogger
-	}
-	if logger, exit := loggerMap[groupName]; exit {
-		return logger
-	}
-
-	if loggerMap == nil {
-		loggerMap = map[string]*logrus.Logger{}
-	}
-	logger := logrus.New()
-	logger.SetReportCaller(true)
-	formatters := &StandardFormatter{}
-	logger.Formatter = formatters
+// newLogger 创建带 formatter + 文件滚动 hook 的 logger，并读取分组级别。
+func newLogger(groupName string) *logrus.Logger {
+	l := logrus.New()
+	l.SetReportCaller(true)
+	l.Formatter = &StandardFormatter{}
 
 	loggerDir := config.GetValueStringDefault("logger.home", "./logs/")
-	logger.AddHook(lfshook.NewHook(lfshook.WriterMap{
+	l.AddHook(lfshook.NewHook(lfshook.WriterMap{
 		logrus.DebugLevel: rotateLogWithCache(loggerDir, "debug"),
 		logrus.InfoLevel:  rotateLogWithCache(loggerDir, "info"),
 		logrus.WarnLevel:  rotateLogWithCache(loggerDir, "warn"),
 		logrus.ErrorLevel: rotateLogWithCache(loggerDir, "error"),
 		logrus.PanicLevel: rotateLogWithCache(loggerDir, "panic"),
 		logrus.FatalLevel: rotateLogWithCache(loggerDir, "fatal"),
-	}, formatters))
+	}, l.Formatter))
 
-	var finalGroupLevel string
-	rootLevel := config.GetValueStringDefault("logger.level", "info")
-	groupLevel := config.GetValueString("logger.group." + groupName + ".level")
-	if groupLevel != "" {
-		finalGroupLevel = groupLevel
-	} else {
-		finalGroupLevel = rootLevel
-	}
-
-	lgLevel, err := logrus.ParseLevel(finalGroupLevel)
-	if err != nil {
-		lgLevel = logrus.InfoLevel
-	}
-	logger.SetLevel(lgLevel)
-
-	loggerMap[groupName] = logger
-	return logger
+	l.SetLevel(levelFor(groupName))
+	return l
 }
 
-func InitLog() {
-	// rootLogger already initialized in init, just update level and color
-	lgLevel, err := logrus.ParseLevel(config.GetValueStringDefault("logger.level", "info"))
-	if err != nil {
-		lgLevel = logrus.InfoLevel
+// levelFor 读取分组日志级别，未配置回退全局 logger.level。
+func levelFor(groupName string) logrus.Level {
+	rootLevel := config.GetValueStringDefault("logger.level", "0")
+	lvl := config.GetValueString("logger.group." + groupName + ".level")
+	if lvl == "" {
+		lvl = rootLevel
 	}
-	rootLogger.SetLevel(lgLevel)
-
-	_gColor := config.GetValueBoolDefault("logger.color.enable", false)
-	gColor = _gColor
-
-	listener.AddListener(listener.EventOfConfigChange, ConfigChangeListener)
+	return parseLevel(lvl)
 }
 
-func ConfigChangeListener(event listener.BaseEvent) {
-	ev := event.(listener.ConfigChangeEvent)
-	switch {
-	case ev.Key == "logger.level":
-		SetGlobalLevel(ev.Value)
-	case ev.Key == "logger.debug_tenant_ids":
-		reloadDebugTenants()
-	case strings.HasPrefix(ev.Key, "logger.group"):
-		words := strings.Split(ev.Key, ".")
-		if len(words) != 5 {
-			return
+// parseLevel 解析日志级别，支持数字和字符串两种形式。
+// 数字映射：-2=trace -1=debug 0=info 1=warn 2=error 3=fatal 4=panic。
+// 字符串兼容旧的 "debug"/"info" 等写法。
+func parseLevel(v string) logrus.Level {
+	switch v {
+	case "-2", "trace":
+		return logrus.TraceLevel
+	case "-1", "debug":
+		return logrus.DebugLevel
+	case "0", "info":
+		return logrus.InfoLevel
+	case "1", "warn", "warning":
+		return logrus.WarnLevel
+	case "2", "error":
+		return logrus.ErrorLevel
+	case "3", "fatal":
+		return logrus.FatalLevel
+	case "4", "panic":
+		return logrus.PanicLevel
+	default:
+		if le, err := logrus.ParseLevel(v); err == nil {
+			return le
 		}
-		_group := words[3]
-		_level := ev.Value
-		le, err := logrus.ParseLevel(_level)
-		if err != nil {
-			return
-		}
-		Group(_group).SetLevel(le)
-	case ev.Key == "appconfig.reload":
-		// 泛型 Config[T] 热加载路径：整文件重载时只补发 appconfig.reload 合成事件（见 config/watch.go），
-		// 不产生逐 key 事件。这里重读配置并应用到已创建的 root/group logger，实现级别热更新。
-		applyLevelFromConfig()
+		return logrus.InfoLevel
 	}
 }
 
-// applyLevelFromConfig 热加载后重读 logger.* 配置，应用到已创建的 logger。
-// 只更新已存在的分组，不创建新分组（新分组首次 Group() 时自行读配置）。
-func applyLevelFromConfig() {
-	rootLevel := config.GetValueStringDefault("logger.level", "info")
-	if le, err := logrus.ParseLevel(rootLevel); err == nil {
-		rootLogger.SetLevel(le)
+// Group 返回指定分组 logger。支持传入多个别名：返回第一个已存在的分组；
+// 若都未创建，则创建第一个名字的分组。
+func Group(groupNames ...string) *logrus.Logger {
+	if len(groupNames) == 0 {
+		return rootLogger
 	}
-	reloadDebugTenants()
-	for groupName := range loggerMap {
-		if groupName == "root" || groupName == "tenant_debug" {
-			continue
-		}
-		lvl := config.GetValueString("logger.group." + groupName + ".level")
-		if lvl == "" {
-			lvl = rootLevel
-		}
-		if le, err := logrus.ParseLevel(lvl); err == nil {
-			loggerMap[groupName].SetLevel(le)
+	for _, name := range groupNames {
+		if l, ok := loggerMap[name]; ok {
+			return l
 		}
 	}
+	return getOrCreate(groupNames[0])
 }
 
-func SetGlobalLevel(strLevel string) {
-	level, err := logrus.ParseLevel(strLevel)
-	if err == nil {
-		rootLogger.SetLevel(level)
-	}
-}
+// ---- 包级便捷函数（root logger）----
 
-func InfoDirect(v ...any) {
-	rootLogger.Info(v...)
-}
+func Info(format string, v ...any)  { rootLogger.Infof(format, v...) }
+func Warn(format string, v ...any)  { rootLogger.Warnf(format, v...) }
+func Error(format string, v ...any) { rootLogger.Errorf(format, v...) }
+func Debug(format string, v ...any) { rootLogger.Debugf(format, v...) }
+func Fatal(format string, v ...any) { rootLogger.Fatalf(format, v...) }
 
-func WarnDirect(v ...any) {
-	rootLogger.Warn(v...)
-}
+// ---- 不定参版本（供需要直接传 args 的调用方）----
 
-func ErrorDirect(v ...any) {
-	rootLogger.Error(v...)
-}
+func InfoDirect(v ...any)  { rootLogger.Info(v...) }
+func WarnDirect(v ...any)  { rootLogger.Warn(v...) }
+func ErrorDirect(v ...any) { rootLogger.Error(v...) }
+func DebugDirect(v ...any) { rootLogger.Debug(v...) }
 
-func FatalDirect(v ...any) {
-	rootLogger.Fatal(v...)
-}
-
-func PanicDirect(v ...any) {
-	rootLogger.Panic(v...)
-}
-
-func DebugDirect(v ...any) {
-	rootLogger.Debug(v...)
-}
-
-func TraceDirect(v ...any) {
-	rootLogger.Trace(v...)
-}
-
-func Info(format string, v ...any) {
-	rootLogger.Infof(format, v...)
-}
-
-func Warn(format string, v ...any) {
-	rootLogger.Warnf(format, v...)
-}
-
-func Error(format string, v ...any) {
-	rootLogger.Errorf(format, v...)
-}
-
-func Debug(format string, v ...any) {
-	rootLogger.Debugf(format, v...)
-}
-
-// DebugWithTenant 按租户控制 debug 日志
-// 自动在消息前注入租户标识 [TenantId:xxx]，调用方无需重复传租户
-// 仅当全局 debug 开启，或 tenantID 在 logger.debug_tenant_ids 列表中时输出
-func DebugWithTenant(tenantID, format string, v ...any) {
-	// 未开启 debug 时直接返回，避免格式化开销
-	if !debugTenantEnabled(tenantID) {
-		return
-	}
-	// 用独立 debug logger 输出，绕开 rootLogger 的 info 级别过滤
-	args := append([]any{tenantID}, v...)
-	tenantDebugLogger.Debugf("[TenantId:%s] "+format, args...)
-}
-
-func Trace(format string, v ...any) {
-	rootLogger.Tracef(format, v...)
-}
-
-func Panic(format string, v ...any) {
-	rootLogger.Panicf(format, v...)
-}
-
-func Fatal(format string, v ...any) {
-	rootLogger.Fatalf(format, v...)
-}
-
+// Record 按字符串级别动态输出（默认 debug）。
 func Record(level, format string, v ...any) {
 	switch strings.ToLower(level) {
-	case "debug":
-		Debug(format, v...)
 	case "info":
 		Info(format, v...)
 	case "warn":
 		Warn(format, v...)
 	case "error":
 		Error(format, v...)
-	case "panic":
-		Panic(format, v...)
 	case "fatal":
 		Fatal(format, v...)
 	default:
 		Debug(format, v...)
-	}
-}
-
-func rotateLog(path, level string) *rotatelogs.RotateLogs {
-	if rotateMap == nil {
-		rotateMap = map[string]*rotatelogs.RotateLogs{}
-	}
-
-	if path == "" {
-		path = "./logs/"
-	}
-
-	maxSizeStr := config.GetValueStringDefault("logger.rotate.max-size", "300MB")
-	maxHistoryStr := config.GetValueStringDefault("logger.rotate.max-history", "60d")
-	rotateTimeStr := config.GetValueStringDefault("logger.rotate.time", "1d")
-
-	rotateOptions := []rotatelogs.Option{rotatelogs.WithLinkName(path + "app-" + level + ".log")}
-	if maxSizeStr != "" {
-		rotateOptions = append(rotateOptions, rotatelogs.WithRotationSize(isc.ParseByteSize(maxSizeStr)))
-	}
-
-	_maxHistory, err := time.ParseDuration(maxHistoryStr)
-	if err == nil {
-		rotateOptions = append(rotateOptions, rotatelogs.WithMaxAge(_maxHistory))
-	}
-
-	_rotateTime, err := time.ParseDuration(rotateTimeStr)
-	if err == nil {
-		rotateOptions = append(rotateOptions, rotatelogs.WithRotationTime(_rotateTime))
-	}
-
-	data, _ := rotatelogs.New(path+"app-"+level+".%Y%m%d.log", rotateOptions...)
-	rotateMap[path+"-"+level] = data
-	return data
-}
-
-func rotateLogWithCache(path, level string) *rotatelogs.RotateLogs {
-	if pRotateValue, exist := rotateMap[path+"-"+level]; exist {
-		return pRotateValue
-	}
-
-	return rotateLog(path, level)
-}
-
-type StandardFormatter struct{}
-
-func (m *StandardFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	var b *bytes.Buffer
-	if entry.Buffer != nil {
-		b = entry.Buffer
-	} else {
-		b = &bytes.Buffer{}
-	}
-
-	var fields []string
-	for k, v := range entry.Data {
-		fields = append(fields, fmt.Sprintf("%v=%v", k, v))
-	}
-
-	level := entry.Level
-	timestamp := entry.Time.Format("2006-01-02 15:04:05")
-	var funPath string
-	if entry.HasCaller() {
-		frame := getCallerFrame()
-		funPath = fmt.Sprintf("%s:%d#%s", shortLogPath(frame.File), frame.Line, functionName(frame))
-	} else {
-		funPath = fmt.Sprintf("%s", entry.Message)
-	}
-
-	var fieldsStr string
-	if len(fields) != 0 {
-		fieldsStr = fmt.Sprintf("[\x1b[%dm%s\x1b[0m]", blue, strings.Join(fields, " "))
-	}
-	var newLog string
-	var levelColor = gray
-	if gColor {
-		switch level {
-		case logrus.DebugLevel:
-			levelColor = blue
-		case logrus.InfoLevel:
-			levelColor = green
-		case logrus.WarnLevel:
-			levelColor = yellow
-		case logrus.ErrorLevel:
-			levelColor = red
-		case logrus.FatalLevel:
-			levelColor = red
-		case logrus.PanicLevel:
-			levelColor = red
-		}
-		newLog = fmt.Sprintf("[%s] \x1b[%dm%s [%s]\x1b[0m [%s] [%v] \x1b[%dm%s\x1b[0m \x1b[%dm%s\x1b[0m %s %s\n",
-			timestamp,
-			black,
-			os.Getenv("HOSTNAME"),
-			config.GetValueStringDefault("application.name", "gobase"),
-			store.Get(constants.TRACE_HEAD_ID), store.Get(constants.TRACE_HEAD_USER_ID),
-			levelColor,
-			strings.ToUpper(entry.Level.String()),
-			black,
-			funPath,
-			entry.Message,
-			fieldsStr)
-	} else {
-		newLog = fmt.Sprintf("[%s] %s [%s] [%s] [%v] %s %s %s %s\n",
-			timestamp,
-			os.Getenv("HOSTNAME"),
-			config.GetValueStringDefault("application.name", "gobase"),
-			store.Get(constants.TRACE_HEAD_ID), store.Get(constants.TRACE_HEAD_USER_ID),
-			strings.ToUpper(entry.Level.String()),
-			funPath,
-			entry.Message,
-			fieldsStr)
-	}
-
-	b.WriteString(newLog)
-	return b.Bytes(), nil
-}
-
-const (
-	maximumCallerDepth    int = 25
-	knownBaseLoggerFrames int = 5
-)
-
-var callerInitOnce sync.Once
-var minimumCallerDepth = 0
-var baseLoggerPackage string
-
-func getPackageName(f string) string {
-	for {
-		lastPeriod := strings.LastIndex(f, ".")
-		lastSlash := strings.LastIndex(f, "/")
-		if lastPeriod > lastSlash {
-			f = f[:lastPeriod]
-		} else {
-			break
-		}
-	}
-	return f
-}
-
-func getCallerFrame() *runtime.Frame {
-	pcs := make([]uintptr, maximumCallerDepth)
-	callerInitOnce.Do(func() {
-		pcs := make([]uintptr, maximumCallerDepth)
-		_ = runtime.Callers(0, pcs)
-
-		for i := 0; i < maximumCallerDepth; i++ {
-			funcName := runtime.FuncForPC(pcs[i]).Name()
-			if strings.Contains(funcName, "logger.getCallerFrame") {
-				baseLoggerPackage = getPackageName(funcName)
-				break
-			}
-		}
-
-		minimumCallerDepth = knownBaseLoggerFrames
-	})
-
-	pcs = make([]uintptr, maximumCallerDepth)
-	depth := runtime.Callers(minimumCallerDepth, pcs)
-	frames := runtime.CallersFrames(pcs[:depth])
-
-	for f, again := frames.Next(); again; f, again = frames.Next() {
-		pkg := getPackageName(f.Function)
-		if pkg != baseLoggerPackage && pkg != "github.com/sirupsen/logrus" {
-			return &f
-		}
-	}
-	return nil
-}
-
-func functionName(frame *runtime.Frame) string {
-	pathMeta := strings.Split(frame.Function, ".")
-	if len(pathMeta) > 1 {
-		return pathMeta[len(pathMeta)-1]
-	}
-	return frame.Function
-}
-
-func shortLogPath(logPath string) string {
-	loggerPath := config.GetValueStringDefault("logger.path.type", "short")
-	if loggerPath == "short" {
-		pathMeta := strings.Split(logPath, string(os.PathSeparator))
-		if len(pathMeta) > 3 {
-			return pathMeta[len(pathMeta)-3] + string(os.PathSeparator) + pathMeta[len(pathMeta)-2] + string(os.PathSeparator) + pathMeta[len(pathMeta)-1]
-		}
-		return logPath
-	} else if loggerPath == "full" {
-		pathMeta := strings.Split(logPath, "@2/project")
-		if len(pathMeta) > 1 {
-			pathMeta[0] = "../.."
-			return strings.Join(pathMeta, "")
-		}
-		return logPath
-	} else {
-		return logPath
 	}
 }
