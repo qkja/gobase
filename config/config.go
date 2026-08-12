@@ -25,6 +25,11 @@ var loadLock sync.Mutex
 var configLoaded = false
 var CurrentProfile = ""
 
+// valueMu 保护 appProperty.ValueMap/ValueDeepMap 的并发读写：
+// 热加载 watcher goroutine 写（doLoadConfigFromAbsPath/SetValue/AppendValue），
+// 请求 goroutine 读（GetValue* 系列）。
+var valueMu sync.RWMutex
+
 func LoadConfig() {
 	loadLock.Lock()
 	defer loadLock.Unlock()
@@ -154,6 +159,9 @@ func UpdateConfig(c *gin.Context) {
 
 // 多种格式优先级：json > properties > yaml > yml
 func doLoadConfigFromAbsPath(resourceAbsPath string) {
+	valueMu.Lock()
+	defer valueMu.Unlock()
+
 	if !strings.HasSuffix(resourceAbsPath, "/") {
 		resourceAbsPath += "/"
 	}
@@ -526,6 +534,9 @@ func AppendTomlFile(filePath string) {
 }
 
 func AppendValue(propertiesNewValue string) {
+	valueMu.Lock()
+	defer valueMu.Unlock()
+
 	if appProperty == nil {
 		appProperty = &ApplicationProperty{}
 		appProperty.ValueMap = make(map[string]interface{})
@@ -561,6 +572,9 @@ func SetValue(key string, value any) {
 	if nil == value {
 		return
 	}
+	valueMu.Lock()
+	defer valueMu.Unlock()
+
 	if appProperty == nil {
 		appProperty = &ApplicationProperty{}
 		appProperty.ValueMap = make(map[string]interface{})
@@ -645,6 +659,8 @@ func parseProperties(key string, value any, resultMap map[string]any) (map[strin
 
 func GetValueString(key string) string {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return ""
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -655,6 +671,8 @@ func GetValueString(key string) string {
 
 func GetValueInt(key string) int {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -665,6 +683,8 @@ func GetValueInt(key string) int {
 
 func GetValueInt8(key string) int8 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -675,6 +695,8 @@ func GetValueInt8(key string) int8 {
 
 func GetValueInt16(key string) int16 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -685,6 +707,8 @@ func GetValueInt16(key string) int16 {
 
 func GetValueInt32(key string) int32 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -695,6 +719,8 @@ func GetValueInt32(key string) int32 {
 
 func GetValueInt64(key string) int64 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -705,6 +731,8 @@ func GetValueInt64(key string) int64 {
 
 func GetValueUInt(key string) uint {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -715,6 +743,8 @@ func GetValueUInt(key string) uint {
 
 func GetValueUInt8(key string) uint8 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -725,6 +755,8 @@ func GetValueUInt8(key string) uint8 {
 
 func GetValueUInt16(key string) uint16 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -735,6 +767,8 @@ func GetValueUInt16(key string) uint16 {
 
 func GetValueUInt32(key string) uint32 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -745,6 +779,8 @@ func GetValueUInt32(key string) uint32 {
 
 func GetValueUInt64(key string) uint64 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -755,6 +791,8 @@ func GetValueUInt64(key string) uint64 {
 
 func GetValueFloat32(key string) float32 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -765,6 +803,8 @@ func GetValueFloat32(key string) float32 {
 
 func GetValueFloat64(key string) float64 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return 0
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -775,6 +815,8 @@ func GetValueFloat64(key string) float64 {
 
 func GetValueBool(key string) bool {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return false
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -785,6 +827,8 @@ func GetValueBool(key string) bool {
 
 func GetValueStringDefault(key, defaultValue string) string {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -795,6 +839,8 @@ func GetValueStringDefault(key, defaultValue string) string {
 
 func GetValueIntDefault(key string, defaultValue int) int {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -805,6 +851,8 @@ func GetValueIntDefault(key string, defaultValue int) int {
 
 func GetValueInt8Default(key string, defaultValue int8) int8 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -815,6 +863,8 @@ func GetValueInt8Default(key string, defaultValue int8) int8 {
 
 func GetValueInt16Default(key string, defaultValue int16) int16 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -825,6 +875,8 @@ func GetValueInt16Default(key string, defaultValue int16) int16 {
 
 func GetValueInt32Default(key string, defaultValue int32) int32 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -835,6 +887,8 @@ func GetValueInt32Default(key string, defaultValue int32) int32 {
 
 func GetValueInt64Default(key string, defaultValue int64) int64 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -845,6 +899,8 @@ func GetValueInt64Default(key string, defaultValue int64) int64 {
 
 func GetValueUIntDefault(key string, defaultValue uint) uint {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -855,6 +911,8 @@ func GetValueUIntDefault(key string, defaultValue uint) uint {
 
 func GetValueUInt8Default(key string, defaultValue uint8) uint8 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -865,6 +923,8 @@ func GetValueUInt8Default(key string, defaultValue uint8) uint8 {
 
 func GetValueUInt16Default(key string, defaultValue uint16) uint16 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -875,6 +935,8 @@ func GetValueUInt16Default(key string, defaultValue uint16) uint16 {
 
 func GetValueUInt32Default(key string, defaultValue uint32) uint32 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -885,6 +947,8 @@ func GetValueUInt32Default(key string, defaultValue uint32) uint32 {
 
 func GetValueUInt64Default(key string, defaultValue uint64) uint64 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -895,6 +959,8 @@ func GetValueUInt64Default(key string, defaultValue uint64) uint64 {
 
 func GetValueFloat32Default(key string, defaultValue float32) float32 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -905,6 +971,8 @@ func GetValueFloat32Default(key string, defaultValue float32) float32 {
 
 func GetValueFloat64Default(key string, defaultValue float64) float64 {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -915,6 +983,8 @@ func GetValueFloat64Default(key string, defaultValue float64) float64 {
 
 func GetValueBoolDefault(key string, defaultValue bool) bool {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return defaultValue
 	}
 	if value, exist := appProperty.ValueMap[key]; exist {
@@ -925,6 +995,8 @@ func GetValueBoolDefault(key string, defaultValue bool) bool {
 
 func GetValueObject(key string, targetPtrObj any) error {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return nil
 	}
 	data := doGetValue(appProperty.ValueDeepMap, key)
@@ -937,6 +1009,8 @@ func GetValueObject(key string, targetPtrObj any) error {
 
 func GetValueArray(key string) []any {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return nil
 	}
 
@@ -951,6 +1025,8 @@ func GetValueArray(key string) []any {
 
 func GetValueArrayInt(key string) []int {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return nil
 	}
 
@@ -965,6 +1041,8 @@ func GetValueArrayInt(key string) []int {
 
 func GetValue(key string) any {
 	if nil == appProperty {
+	valueMu.RLock()
+	defer valueMu.RUnlock()
 		return nil
 	}
 	return doGetValue(appProperty.ValueDeepMap, key)

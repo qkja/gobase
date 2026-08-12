@@ -7,19 +7,20 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
-	"github.com/qkja/gobase/store"
 	"github.com/qkja/gobase/tenant"
+	"github.com/qkja/gobase/trace"
 )
 
-// TestInjectMetadata 验证 tenant 与 store 的 trace 值被写入 outgoing metadata（键名小写）。
+// TestInjectMetadata 验证 tenant 与 trace 的值被写入 outgoing metadata（键名小写）。
 func TestInjectMetadata(t *testing.T) {
 	ctx := tenant.WithInfo(context.Background(), &tenant.Info{
 		TenantID: "T1",
 		Language: "zh-CN",
 	})
-	store.Put("t-head-traceId", "trace-123")
-	store.Put("t-head-userId", "u9")
-	defer store.Clean()
+	ctx = trace.WithInfo(ctx, &trace.Info{
+		TraceID: "trace-123",
+		UserID:  "u9",
+	})
 
 	out := injectMetadata(ctx)
 	md, _ := metadata.FromOutgoingContext(out)

@@ -19,8 +19,11 @@ type Info struct {
 
 type ctxKey struct{}
 
-// WithInfo 将 info 写入 ctx 并返回新 ctx。
+// WithInfo 将 info 写入 ctx 并返回新 ctx。ctx 为 nil 时回退 Background。
 func WithInfo(ctx context.Context, info *Info) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return context.WithValue(ctx, ctxKey{}, info)
 }
 
@@ -34,13 +37,17 @@ func GetInfo(ctx context.Context) *Info {
 }
 
 // WithTraceID 将 traceID 写入 ctx（便捷方法，保留已有 Info 的其他字段）。
+// 拷贝结构体而非原地修改，避免污染共享的 *Info。
 func WithTraceID(ctx context.Context, traceID string) context.Context {
 	info := GetInfo(ctx)
-	if info == nil {
-		info = &Info{}
+	newInfo := &Info{TraceID: traceID}
+	if info != nil {
+		newInfo.RPCID = info.RPCID
+		newInfo.Sampled = info.Sampled
+		newInfo.UserID = info.UserID
+		newInfo.UserName = info.UserName
 	}
-	info.TraceID = traceID
-	return WithInfo(ctx, info)
+	return WithInfo(ctx, newInfo)
 }
 
 // TraceIDFromCtx 从 ctx 读取 TraceID，未写入时返回空字符串。

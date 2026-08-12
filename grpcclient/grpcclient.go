@@ -41,7 +41,11 @@ func Dial(ctx context.Context, svcName string) (*grpc.ClientConn, error) {
 	if err != nil {
 		return nil, err
 	}
-	actual, _ := connPool.LoadOrStore(svcName, conn)
+	actual, loaded := connPool.LoadOrStore(svcName, conn)
+	if loaded {
+		// 并发首拨时已有连接，释放刚创建的这个，避免泄漏
+		_ = conn.Close()
+	}
 	return actual.(*grpc.ClientConn), nil
 }
 
@@ -66,10 +70,15 @@ func Call[T any](ctx context.Context, svcName string, fn func(ctx context.Contex
 	return fn(callCtx, conn)
 }
 
-// injectMetadata 将租户上下文与 store 中的 trace 头写入 outgoing gRPC metadata。
+// injectMetadata 将租户上下文与 trace 头写入 outgoing gRPC metadata。
 // gRPC metadata 键必须小写，故对 constants 头名统一 ToLower。
+// 合并 ctx 上已有的 outgoing metadata，不覆盖。
 func injectMetadata(ctx context.Context) context.Context {
-	md := metadata.New(map[string]string{})
+	md, _ := metadata.FromOutgoingContext(ctx)
+	md = md.Copy()
+	if md == nil {
+		md = metadata.New(map[string]string{})
+	}
 	if info := tenant.GetInfo(ctx); info != nil {
 		if info.TenantID != "" {
 			md.Append(strings.ToLower(constants.TENANT_HEAD_ID), info.TenantID)

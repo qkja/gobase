@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"sync"
 
 	"github.com/qkja/gobase/config"
 	"github.com/qkja/gobase/tenant"
@@ -16,17 +17,21 @@ var (
 	tenantDebugLogger *logrus.Logger
 	// debugTenantIDs 开启 debug 的租户列表（logger.debug_tenant_ids）。
 	debugTenantIDs []string
+	debugTenantMu  sync.RWMutex
 )
 
 // reloadDebugTenants 从配置重读 logger.debug_tenant_ids（热更新入口）。
 func reloadDebugTenants() {
 	arr := config.GetValueArray("logger.debug_tenant_ids")
-	debugTenantIDs = make([]string, 0, len(arr))
+	ids := make([]string, 0, len(arr))
 	for _, v := range arr {
 		if s, ok := v.(string); ok && s != "" {
-			debugTenantIDs = append(debugTenantIDs, s)
+			ids = append(ids, s)
 		}
 	}
+	debugTenantMu.Lock()
+	debugTenantIDs = ids
+	debugTenantMu.Unlock()
 }
 
 // debugTenantEnabled 判断指定租户是否开启 debug：
@@ -39,6 +44,8 @@ func debugTenantEnabled(tenantID string) bool {
 	if tenantID == "" {
 		return false
 	}
+	debugTenantMu.RLock()
+	defer debugTenantMu.RUnlock()
 	return slices.Contains(debugTenantIDs, tenantID)
 }
 

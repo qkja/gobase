@@ -1,8 +1,6 @@
 package logger
 
 import (
-	"strings"
-
 	"github.com/qkja/gobase/config"
 	"github.com/qkja/gobase/listener"
 )
@@ -18,18 +16,8 @@ func InitLog() {
 func ConfigChangeListener(event listener.BaseEvent) {
 	ev := event.(listener.ConfigChangeEvent)
 	switch {
-	case ev.Key == "logger.level":
-		SetGlobalLevel(ev.Value)
-	case ev.Key == "logger.debug_tenant_ids":
-		reloadDebugTenants()
-	case strings.HasPrefix(ev.Key, "logger.group"):
-		words := strings.Split(ev.Key, ".")
-		if len(words) != 5 {
-			return
-		}
-		Group(words[3]).SetLevel(parseLevel(ev.Value))
 	case ev.Key == "appconfig.reload":
-		// 泛型 Config[T] 热加载：整文件重载时只补发合成事件，逐 key 不产生。
+		// 泛型 Config[T] 热加载：整文件重载时只补发合成事件。
 		// 这里重读配置并应用到已创建的 root/group logger。
 		applyLevelFromConfig()
 	}
@@ -40,7 +28,10 @@ func ConfigChangeListener(event listener.BaseEvent) {
 func applyLevelFromConfig() {
 	rootLevel := config.GetValueStringDefault("logger.level", "0")
 	rootLogger.SetLevel(parseLevel(rootLevel))
+	gColor = config.GetValueBoolDefault("logger.color.enable", false)
 	reloadDebugTenants()
+	loggerMu.RLock()
+	defer loggerMu.RUnlock()
 	for groupName := range loggerMap {
 		if groupName == "root" {
 			continue

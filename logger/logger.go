@@ -10,6 +10,7 @@ package logger
 
 import (
 	"strings"
+	"sync"
 
 	"github.com/qkja/gobase/config"
 	"github.com/rifflock/lfshook"
@@ -19,6 +20,7 @@ import (
 // 包级全局状态。
 var (
 	loggerMap  map[string]*logrus.Logger
+	loggerMu   sync.RWMutex
 	rootLogger *logrus.Logger
 	gColor     bool
 )
@@ -34,6 +36,15 @@ func init() {
 
 // getOrCreate 统一获取或创建分组 logger（合并了旧的 Group/doGroup 重复逻辑）。
 func getOrCreate(groupName string) *logrus.Logger {
+	loggerMu.RLock()
+	if l, ok := loggerMap[groupName]; ok {
+		loggerMu.RUnlock()
+		return l
+	}
+	loggerMu.RUnlock()
+
+	loggerMu.Lock()
+	defer loggerMu.Unlock()
 	if l, ok := loggerMap[groupName]; ok {
 		return l
 	}
@@ -105,11 +116,14 @@ func Group(groupNames ...string) *logrus.Logger {
 	if len(groupNames) == 0 {
 		return rootLogger
 	}
+	loggerMu.RLock()
 	for _, name := range groupNames {
 		if l, ok := loggerMap[name]; ok {
+			loggerMu.RUnlock()
 			return l
 		}
 	}
+	loggerMu.RUnlock()
 	return getOrCreate(groupNames[0])
 }
 

@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"log"
+	"sync"
 	"time"
 
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
@@ -9,10 +11,16 @@ import (
 )
 
 // rotateMap 按 "path-level" 缓存滚动器，避免重复创建。
-var rotateMap map[string]*rotatelogs.RotateLogs
+var (
+	rotateMap map[string]*rotatelogs.RotateLogs
+	rotateMu  sync.RWMutex
+)
 
 // rotateLog 创建指定 path/level 的文件滚动器。
 func rotateLog(path, level string) *rotatelogs.RotateLogs {
+	rotateMu.Lock()
+	defer rotateMu.Unlock()
+
 	if rotateMap == nil {
 		rotateMap = map[string]*rotatelogs.RotateLogs{}
 	}
@@ -35,15 +43,22 @@ func rotateLog(path, level string) *rotatelogs.RotateLogs {
 		rotateOptions = append(rotateOptions, rotatelogs.WithRotationTime(rotateTime))
 	}
 
-	data, _ := rotatelogs.New(path+"app-"+level+".%Y%m%d.log", rotateOptions...)
+	data, err := rotatelogs.New(path+"app-"+level+".%Y%m%d.log", rotateOptions...)
+	if err != nil {
+		log.Printf("[logger] rotateLog 创建滚动器失败: %v", err)
+		return nil
+	}
 	rotateMap[path+"-"+level] = data
 	return data
 }
 
 // rotateLogWithCache 从缓存取滚动器，无则创建。
 func rotateLogWithCache(path, level string) *rotatelogs.RotateLogs {
+	rotateMu.RLock()
 	if v, ok := rotateMap[path+"-"+level]; ok {
+		rotateMu.RUnlock()
 		return v
 	}
+	rotateMu.RUnlock()
 	return rotateLog(path, level)
 }
