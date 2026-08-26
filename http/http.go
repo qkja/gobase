@@ -1,0 +1,596 @@
+package http
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	gourl "net/url"
+
+	"github.com/qkja/gobase/config"
+	"github.com/qkja/gobase/logger"
+
+	//"github.com/qkja/gobase/goid"
+	"io"
+	"log"
+	"net"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+)
+
+var httpClient = createHTTPClient()
+
+const (
+	MaxIdleConns          int    = 100
+	MaxIdleConnsPerHost   int    = 100
+	IdleConnTimeout       int    = 90
+	ContentTypeJson       string = "application/json; charset=utf-8"
+	ContentTypeHtml       string = "text/html; charset=utf-8"
+	ContentTypeText       string = "text/plain; charset=utf-8"
+	ContentTypeCss        string = "text/css; charset=utf-8"
+	ContentTypeJavaScript string = "application/x-javascript; charset=utf-8"
+	ContentTypeJpeg       string = "image/jpeg"
+	ContentTypePng        string = "image/png"
+	ContentTypeGif        string = "image/gif"
+	ContentTypeAll        string = "*/*"
+	ContentPostForm       string = "application/x-www-form-urlencoded"
+)
+
+var NetHttpHooks []GobaseHttpHook
+
+func init() {
+	NetHttpHooks = []GobaseHttpHook{}
+}
+
+type GobaseHttpHook interface {
+	Before(ctx context.Context, req *http.Request) (context.Context, http.Header)
+	After(ctx context.Context, rsp *http.Response, rspCode int, rspData any, err error)
+}
+
+func AddHook(httpHook GobaseHttpHook) {
+	NetHttpHooks = append(NetHttpHooks, httpHook)
+}
+
+type NetError struct {
+	ErrMsg string
+}
+
+func (error *NetError) Error() string {
+	return error.ErrMsg
+}
+
+type DataResponse[T any] struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    T      `json:"data"`
+}
+
+// createHTTPClient for connection re-use
+func createHTTPClient() *http.Client {
+	config.LoadConfig()
+	client := &http.Client{}
+
+	// 从配置文件中载入配置
+	loadClientFromConfig(client)
+
+	return client
+}
+
+func loadClientFromConfig(client *http.Client) {
+	if config.GetValueString("http.timeout") != "" {
+		t, err := time.ParseDuration(config.GetValueString("http.timeout"))
+		if err != nil {
+			logger.Warn("读取配置【http.timeout】异常", err)
+		} else {
+			client.Timeout = t
+		}
+	}
+
+	transport := &http.Transport{}
+	if config.GetValueString("http.transport.tls-handshake-timeout") != "" {
+		t, err := time.ParseDuration(config.GetValueString("http.transport.tls-handshake-timeout"))
+		if err != nil {
+			logger.Warn("读取配置【http.transport.tls-handshake-timeout】异常", err)
+		} else {
+			transport.TLSHandshakeTimeout = t
+		}
+	}
+
+	if config.GetValueString("http.transport.disable-keep-alives") != "" {
+		transport.DisableKeepAlives = config.GetValueBool("http.transport.disable-keep-alives")
+	}
+
+	if config.GetValueString("http.transport.disable-compression") != "" {
+		transport.DisableCompression = config.GetValueBool("http.transport.disable-compression")
+	}
+
+	if config.GetValueString("http.transport.max-idle-conns") != "" {
+		transport.MaxIdleConns = config.GetValueInt("http.transport.max-idle-conns")
+	}
+
+	if config.GetValueString("http.transport.max-idle-conns-per-host") != "" {
+		transport.MaxIdleConnsPerHost = config.GetValueInt("http.transport.max-idle-conns-per-host")
+	}
+
+	if config.GetValueString("http.transport.max-conns-per-host") != "" {
+		transport.MaxConnsPerHost = config.GetValueInt("http.transport.max-conns-per-host")
+	}
+
+	if config.GetValueString("http.transport.idle-conn-timeout") != "" {
+		t, err := time.ParseDuration(config.GetValueString("http.transport.idle-conn-timeout"))
+		if err != nil {
+			logger.Warn("读取配置【http.transport.idle-conn-timeout】异常", err)
+		} else {
+			transport.IdleConnTimeout = t
+		}
+	}
+
+	if config.GetValueString("http.transport.response-header-timeout") != "" {
+		t, err := time.ParseDuration(config.GetValueString("http.transport.response-header-timeout"))
+		if err != nil {
+			logger.Warn("读取配置【http.transport.response-header-timeout】异常", err)
+		} else {
+			transport.ResponseHeaderTimeout = t
+		}
+	}
+
+	if config.GetValueString("http.transport.expect-continue-timeout") != "" {
+		t, err := time.ParseDuration(config.GetValueString("http.transport.expect-continue-timeout"))
+		if err != nil {
+			logger.Warn("读取配置【http.transport.expect-continue-timeout】异常", err)
+		} else {
+			transport.ExpectContinueTimeout = t
+		}
+	}
+
+	if config.GetValueString("http.transport.max-response-header-bytes") != "" {
+		transport.MaxResponseHeaderBytes = config.GetValueInt64("http.transport.max-response-header-bytes")
+	}
+
+	if config.GetValueString("http.transport.write-buffer-size") != "" {
+		transport.WriteBufferSize = config.GetValueInt("http.transport.write-buffer-size")
+	}
+
+	if config.GetValueString("http.transport.read-buffer-size") != "" {
+		transport.ReadBufferSize = config.GetValueInt("http.transport.read-buffer-size")
+	}
+
+	if config.GetValueString("http.transport.force-attempt-HTTP2") != "" {
+		transport.ForceAttemptHTTP2 = config.GetValueBool("http.transport.force-attempt-HTTP2")
+	}
+
+	transport.DialContext = loadConfigOfDialContext()
+	client.Transport = transport
+}
+
+func loadConfigOfDialContext() func(ctx context.Context, network, addr string) (net.Conn, error) {
+	dialer := &net.Dialer{}
+	if config.GetValueString("http.transport.dial-context.timeout") != "" {
+		t, err := time.ParseDuration(config.GetValueString("http.transport.dial-context.timeout"))
+		if err != nil {
+			logger.Warn("读取配置【http.transport.dial-context.timeout】异常", err)
+		} else {
+			dialer.Timeout = t
+		}
+	}
+
+	if config.GetValueString("http.transport.dial-context.keep-alive") != "" {
+		t, err := time.ParseDuration(config.GetValueString("http.transport.dial-context.keep-alive"))
+		if err != nil {
+			logger.Warn("读取配置【http.transport.dial-context.keep-alive】异常", err)
+		} else {
+			dialer.KeepAlive = t
+		}
+	}
+	return dialer.DialContext
+}
+
+func SetHttpClient(httpClientOuter *http.Client) {
+	httpClient = httpClientOuter
+}
+
+func GetClient() *http.Client {
+	return httpClient
+}
+
+func Do(httpRequest *http.Request) (int, http.Header, any, error) {
+	ctx := context.Background()
+	for _, hook := range NetHttpHooks {
+		_ctx, httpHeader := hook.Before(ctx, httpRequest)
+		httpRequest.Header = httpHeader
+		ctx = _ctx
+	}
+
+	resp, err := httpClient.Do(httpRequest)
+	rspCode, rspHead, rspData, err := doParseResponse(resp, err)
+	for _, hook := range NetHttpHooks {
+		hook.After(ctx, resp, rspCode, rspData, err)
+	}
+	return rspCode, rspHead, rspData, err
+}
+
+// ------------------ get ------------------
+
+func GetSimple(url string) (int, http.Header, any, error) {
+	return Get(url, nil, nil)
+}
+
+func GetSimpleOfStandard(url string) (int, http.Header, any, error) {
+	return GetOfStandard(url, nil, nil)
+}
+
+func Get(url string, header http.Header, parameterMap map[string]string) (int, http.Header, any, error) {
+	httpRequest, err := http.NewRequest("GET", UrlWithParameter(url, parameterMap), nil)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+
+	return call(httpRequest, url)
+}
+
+func GetOfStandard(url string, header http.Header, parameterMap map[string]string) (int, http.Header, any, error) {
+	httpRequest, err := http.NewRequest("GET", UrlWithParameter(url, parameterMap), nil)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+
+	return callToStandard(httpRequest, url)
+}
+
+// ------------------ head ------------------
+
+func HeadSimple(url string) error {
+	return Head(url, nil, nil)
+}
+
+func Head(url string, header http.Header, parameterMap map[string]string) error {
+	httpRequest, err := http.NewRequest("GET", UrlWithParameter(url, parameterMap), nil)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+
+	return callIgnoreReturn(httpRequest, url)
+}
+
+// ------------------ post ------------------
+
+func PostSimple(url string, body any) (int, http.Header, any, error) {
+	return Post(url, nil, nil, body)
+}
+
+func PostSimpleOfStandard(url string, body any) (int, http.Header, any, error) {
+	return PostOfStandard(url, nil, nil, body)
+}
+
+func Post(url string, header http.Header, parameterMap map[string]string, body any) (int, http.Header, any, error) {
+	bytes, _ := json.Marshal(body)
+	payload := strings.NewReader(string(bytes))
+	httpRequest, err := http.NewRequest("POST", UrlWithParameter(url, parameterMap), payload)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+	httpRequest.Header.Add("Content-Type", ContentTypeJson)
+	return call(httpRequest, url)
+}
+
+func PostOfStandard(url string, header http.Header, parameterMap map[string]string, body any) (int, http.Header, any, error) {
+	bytes, _ := json.Marshal(body)
+	payload := strings.NewReader(string(bytes))
+	httpRequest, err := http.NewRequest("POST", UrlWithParameter(url, parameterMap), payload)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+	httpRequest.Header.Add("Content-Type", ContentTypeJson)
+	return callToStandard(httpRequest, url)
+}
+
+func PostForm(url string, header http.Header, parameterMap map[string]any) (int, http.Header, any, error) {
+	// resolve parameterMap
+	var httpRequest http.Request
+	_ = httpRequest.ParseForm()
+	if parameterMap != nil {
+		for k, v := range parameterMap {
+			httpRequest.Form.Add(k, fmt.Sprintf("%v", v))
+		}
+	}
+	body := strings.NewReader(httpRequest.Form.Encode())
+	// 简单封装一下
+	httpReq, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+	// resolve header
+	if header != nil {
+		httpReq.Header = header
+	}
+	httpReq.Header.Set("Content-Type", ContentPostForm)
+
+	ctx := context.Background()
+	for _, hook := range NetHttpHooks {
+		_ctx, httpHeader := hook.Before(ctx, httpReq)
+		httpReq.Header = httpHeader
+		ctx = _ctx
+	}
+
+	resp, err := httpClient.Do(httpReq)
+	rspCode, rspHead, rspData, err := doParseResponse(resp, err)
+	for _, hook := range NetHttpHooks {
+		hook.After(ctx, resp, rspCode, rspData, err)
+	}
+
+	return rspCode, rspHead, rspData, err
+}
+
+// ------------------ put ------------------
+
+func PutSimple(url string, body any) (int, http.Header, any, error) {
+	return Put(url, nil, nil, body)
+}
+
+func PutSimpleOfStandard(url string, body any) (int, http.Header, any, error) {
+	return PutOfStandard(url, nil, nil, body)
+}
+
+func Put(url string, header http.Header, parameterMap map[string]string, body any) (int, http.Header, any, error) {
+	bytes, _ := json.Marshal(body)
+	payload := strings.NewReader(string(bytes))
+	httpRequest, err := http.NewRequest("PUT", UrlWithParameter(url, parameterMap), payload)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+	httpRequest.Header.Add("Content-Type", ContentTypeJson)
+	return call(httpRequest, url)
+}
+
+func PutOfStandard(url string, header http.Header, parameterMap map[string]string, body any) (int, http.Header, any, error) {
+	bytes, _ := json.Marshal(body)
+	payload := strings.NewReader(string(bytes))
+	httpRequest, err := http.NewRequest("PUT", UrlWithParameter(url, parameterMap), payload)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+	httpRequest.Header.Add("Content-Type", ContentTypeJson)
+	return callToStandard(httpRequest, url)
+}
+
+// ------------------ delete ------------------
+
+func DeleteSimple(url string) (int, http.Header, any, error) {
+	return Get(url, nil, nil)
+}
+
+func DeleteSimpleOfStandard(url string) (int, http.Header, any, error) {
+	return GetOfStandard(url, nil, nil)
+}
+
+func Delete(url string, header http.Header, parameterMap map[string]string) (int, http.Header, any, error) {
+	httpRequest, err := http.NewRequest("DELETE", UrlWithParameter(url, parameterMap), nil)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+
+	return call(httpRequest, url)
+}
+
+func DeleteOfStandard(url string, header http.Header, parameterMap map[string]string) (int, http.Header, any, error) {
+	httpRequest, err := http.NewRequest("DELETE", UrlWithParameter(url, parameterMap), nil)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+
+	return callToStandard(httpRequest, url)
+}
+
+// ------------------ patch ------------------
+
+func PatchSimple(url string, body any) (int, http.Header, any, error) {
+	return Post(url, nil, nil, body)
+}
+
+func PatchSimpleOfStandard(url string, body any) (int, http.Header, any, error) {
+	return PostOfStandard(url, nil, nil, body)
+}
+
+func Patch(url string, header http.Header, parameterMap map[string]string, body any) (int, http.Header, any, error) {
+	bytes, _ := json.Marshal(body)
+	payload := strings.NewReader(string(bytes))
+	httpRequest, err := http.NewRequest("PATCH", UrlWithParameter(url, parameterMap), payload)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+	httpRequest.Header.Add("Content-Type", ContentTypeJson)
+	return call(httpRequest, url)
+}
+
+func PatchOfStandard(url string, header http.Header, parameterMap map[string]string, body any) (int, http.Header, any, error) {
+	bytes, _ := json.Marshal(body)
+	payload := strings.NewReader(string(bytes))
+	httpRequest, err := http.NewRequest("PATCH", UrlWithParameter(url, parameterMap), payload)
+	if err != nil {
+		log.Printf("NewRequest error(%v)\n", err)
+		return -1, nil, nil, err
+	}
+
+	if header != nil {
+		httpRequest.Header = header
+	}
+	httpRequest.Header.Add("Content-Type", ContentTypeJson)
+	return callToStandard(httpRequest, url)
+}
+
+func call(httpRequest *http.Request, url string) (int, http.Header, any, error) {
+	ctx := context.Background()
+
+	for _, hook := range NetHttpHooks {
+		_ctx, httpHeader := hook.Before(ctx, httpRequest)
+		httpRequest.Header = httpHeader
+		ctx = _ctx
+	}
+
+	httpResponse, err := httpClient.Do(httpRequest)
+	rspCode, rspHead, rspData, err := doParseResponse(httpResponse, err)
+
+	for _, hook := range NetHttpHooks {
+		hook.After(ctx, httpResponse, rspCode, rspData, err)
+	}
+	return rspCode, rspHead, rspData, err
+}
+
+func doParseResponse(httpResponse *http.Response, err error) (int, http.Header, any, error) {
+	if err != nil && httpResponse == nil {
+		log.Printf("Error sending request to API endpoint. %+v", err)
+		return -1, nil, nil, &NetError{ErrMsg: "Error sending request, err" + err.Error()}
+	} else {
+		if httpResponse == nil {
+			log.Printf("httpResponse is nil\n")
+			return -1, nil, nil, nil
+		}
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				log.Printf("Body close error(%v)", err)
+			}
+		}(httpResponse.Body)
+
+		code := httpResponse.StatusCode
+		headers := httpResponse.Header
+		if code != http.StatusOK {
+			body, _ := io.ReadAll(httpResponse.Body)
+			return code, headers, nil, &NetError{ErrMsg: "remote error, url: code " + strconv.Itoa(code) + ", message: " + string(body)}
+		}
+
+		// We have seen inconsistencies even when we get 200 OK response
+		body, err := io.ReadAll(httpResponse.Body)
+		if err != nil {
+			log.Printf("Couldn't parse response body(%v)", err)
+			return code, headers, nil, &NetError{ErrMsg: "Couldn't parse response body, err: " + err.Error()}
+		}
+
+		return code, headers, body, nil
+	}
+}
+
+// ------------------ trace ------------------
+// ------------------ options ------------------
+// 暂时先不处理
+
+func callIgnoreReturn(httpRequest *http.Request, url string) error {
+	ctx := context.Background()
+
+	for _, hook := range NetHttpHooks {
+		_ctx, httpHeader := hook.Before(ctx, httpRequest)
+		httpRequest.Header = httpHeader
+		ctx = _ctx
+	}
+
+	httpResponse, err := httpClient.Do(httpRequest)
+	rspCode, _, rspData, err := doParseResponse(httpResponse, err)
+
+	for _, hook := range NetHttpHooks {
+		hook.After(ctx, httpResponse, rspCode, rspData, err)
+	}
+	return err
+}
+
+func callToStandard(httpRequest *http.Request, url string) (int, http.Header, any, error) {
+	return parseStandard(call(httpRequest, url))
+}
+
+func parseStandard(statusCode int, headers http.Header, responseResult any, errs error) (int, http.Header, any, error) {
+	if errs != nil {
+		return statusCode, headers, nil, errs
+	}
+	var standRsp DataResponse[any]
+	err := json.Unmarshal(responseResult.([]byte), &standRsp)
+	if err != nil {
+		return statusCode, headers, nil, err
+	}
+
+	// 判断业务的失败信息
+	if standRsp.Code != 0 && standRsp.Code != 200 {
+		return statusCode, headers, nil, &NetError{ErrMsg: fmt.Sprintf("remote err, bizCode=%d, message=%s", standRsp.Code, standRsp.Message)}
+	}
+
+	return statusCode, headers, standRsp.Data, nil
+}
+
+func UrlWithParameter(url string, parameterMap map[string]string) string {
+	goUrl, err := gourl.Parse(url)
+	if err != nil {
+		//Here, in order to be compatible with the old logic, if parsing fails, it will call the old method.
+		return oldUrlWithParameter(url, parameterMap)
+	}
+	queryValue := goUrl.Query()
+	for key, value := range parameterMap {
+		queryValue.Set(key, value)
+	}
+	goUrl.RawQuery = queryValue.Encode()
+	return goUrl.String()
+}
+
+// Deprecated
+func oldUrlWithParameter(url string, parameterMap map[string]string) string {
+	if parameterMap == nil || len(parameterMap) == 0 {
+		return url
+	}
+
+	url += "?"
+
+	var parameters []string
+	for key, value := range parameterMap {
+		parameters = append(parameters, key+"="+value)
+	}
+
+	return url + strings.Join(parameters, "&")
+}
