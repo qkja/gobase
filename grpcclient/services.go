@@ -5,4 +5,5 @@ package grpcclient
 const (
 	IdentityhubSvr   = "identityhubsvr"
 	TenantManagerSvr = "tenantmanagersvr"
+	AuthNexusSvr     = "authnexussvr"
 )
