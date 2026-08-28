@@ -45,3 +45,37 @@
 4012 Delete user failed
 4013 Enable user failed
 4014 Disable user failed
+5001 Tenant not found
+5002 Tenant domain already exists
+5003 Phone number already in use
+5004 Email already in use
+5005 Tenant already disabled
+5006 Tenant already enabled
+5007 Tenant deleted
+5008 Tenant domain is immutable
+5009 Create tenant failed
+5010 Update tenant failed
+5011 Query tenant failed
+5012 Delete tenant failed
+5101 Platform account not found
+5102 Username already in use
+5103 Phone number already in use
+5104 Email already in use
+5105 Account locked
+5106 Account disabled
+5107 At least one enabled account with this permission is required
+5108 Cannot operate on yourself
+5109 Please change your initial password first
+5110 Role not found
+5111 Role key already in use
+5112 Role name already in use
+5113 Built-in role cannot be modified or deleted
+5114 Role is still in use by accounts
+5115 Invalid permission
+5116 At least one role is required
+5117 Session not found or expired
+5118 Invalid credential, please sign in again
+5201 Audit log not found
+5202 Query time range exceeds limit
+5203 Export exceeds limit, please narrow conditions
+5204 Please specify a time range

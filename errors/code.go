@@ -7,9 +7,12 @@ package errors
 //	"2000"-"2999" 目录域
 //	"3000"-"3999" 组织架构
 //	"4000"-"4999" 用户
+//	"5000"-"5099" 租户
+//	"5100"-"5199" 平台账号与角色
+//	"5200"-"5299" 审计
 //	"1999"      未知错误（兜底）
 //
-// 全部错误码由 gobase 内置定义，业务直接使用，禁止自定义/注册新码。
+// 全部错误码由 gobase 内置定义，业务直接使用，禁止自定义/注册新码。 （对 gobase 本身的扩展属合规路径，各业务服务不得自行注册新码。）
 
 /* 成功 */
 const (
@@ -129,6 +132,86 @@ const (
 	CodeUserDisableFailed = "4014"
 )
 
+/* 租户错误码 5000-5099 */
+const (
+	// CodeTenantNotFound 租户不存在
+	CodeTenantNotFound = "5001"
+	// CodeTenantDomainExists 租户 domain 已存在
+	CodeTenantDomainExists = "5002"
+	// CodeTenantPhoneExists 手机号已被使用
+	CodeTenantPhoneExists = "5003"
+	// CodeTenantEmailExists 邮箱已被使用
+	CodeTenantEmailExists = "5004"
+	// CodeTenantAlreadyDisabled 租户已是禁用状态
+	CodeTenantAlreadyDisabled = "5005"
+	// CodeTenantAlreadyEnabled 租户已是启用状态
+	CodeTenantAlreadyEnabled = "5006"
+	// CodeTenantDeleted 租户已删除
+	CodeTenantDeleted = "5007"
+	// CodeTenantDomainImmutable 租户 domain 不可修改
+	CodeTenantDomainImmutable = "5008"
+	// CodeTenantCreateFailed 创建租户失败
+	CodeTenantCreateFailed = "5009"
+	// CodeTenantUpdateFailed 编辑租户失败
+	CodeTenantUpdateFailed = "5010"
+	// CodeTenantGetFailed 查询租户失败
+	CodeTenantGetFailed = "5011"
+	// CodeTenantDeleteFailed 删除租户失败
+	CodeTenantDeleteFailed = "5012"
+)
+
+/* 平台账号与角色错误码 5100-5199 */
+const (
+	// CodePlatformAccountNotFound 平台账号不存在
+	CodePlatformAccountNotFound = "5101"
+	// CodePlatformUsernameExists 账号名已被使用
+	CodePlatformUsernameExists = "5102"
+	// CodePlatformPhoneExists 手机号已被使用
+	CodePlatformPhoneExists = "5103"
+	// CodePlatformEmailExists 邮箱已被使用
+	CodePlatformEmailExists = "5104"
+	// CodePlatformAccountLocked 账号已锁定
+	CodePlatformAccountLocked = "5105"
+	// CodePlatformAccountDisabled 账号已禁用
+	CodePlatformAccountDisabled = "5106"
+	// CodePlatformLastAdmin 系统需至少保留一个拥有该权限的启用账号
+	CodePlatformLastAdmin = "5107"
+	// CodePlatformCannotOperateSelf 不能对自己执行此操作
+	CodePlatformCannotOperateSelf = "5108"
+	// CodePlatformMustChangePassword 请先修改初始密码
+	CodePlatformMustChangePassword = "5109"
+	// CodePlatformRoleNotFound 角色不存在
+	CodePlatformRoleNotFound = "5110"
+	// CodePlatformRoleKeyExists 角色标识已被使用
+	CodePlatformRoleKeyExists = "5111"
+	// CodePlatformRoleNameExists 角色名称已被使用
+	CodePlatformRoleNameExists = "5112"
+	// CodePlatformRoleBuiltInImmutable 内置角色不可修改或删除
+	CodePlatformRoleBuiltInImmutable = "5113"
+	// CodePlatformRoleInUse 该角色仍被账号使用，请先解绑
+	CodePlatformRoleInUse = "5114"
+	// CodePlatformInvalidPermission 权限点无效
+	CodePlatformInvalidPermission = "5115"
+	// CodePlatformRoleRequired 账号至少需绑定一个角色
+	CodePlatformRoleRequired = "5116"
+	// CodePlatformSessionNotFound 会话不存在或已失效
+	CodePlatformSessionNotFound = "5117"
+	// CodePlatformRefreshTokenReplayed 凭证异常，请重新登录
+	CodePlatformRefreshTokenReplayed = "5118"
+)
+
+/* 审计错误码 5200-5299 */
+const (
+	// CodeAuditLogNotFound 审计记录不存在
+	CodeAuditLogNotFound = "5201"
+	// CodeAuditTimeRangeTooLarge 查询时间跨度超出上限
+	CodeAuditTimeRangeTooLarge = "5202"
+	// CodeAuditExportTooLarge 导出数据量超出上限，请收窄条件
+	CodeAuditExportTooLarge = "5203"
+	// CodeAuditTimeRangeRequired 请指定查询时间区间
+	CodeAuditTimeRangeRequired = "5204"
+)
+
 // 通用便捷错误实例（全局变量，包初始化时填充，线程安全）
 var (
 	ErrInternal          = New(CodeInternal)
@@ -189,4 +272,50 @@ var (
 	ErrUserDeleteFailed        = New(CodeUserDeleteFailed)
 	ErrUserEnableFailed        = New(CodeUserEnableFailed)
 	ErrUserDisableFailed       = New(CodeUserDisableFailed)
+)
+
+// 租户便捷错误实例
+var (
+	ErrTenantNotFound        = New(CodeTenantNotFound)
+	ErrTenantDomainExists    = New(CodeTenantDomainExists)
+	ErrTenantPhoneExists     = New(CodeTenantPhoneExists)
+	ErrTenantEmailExists     = New(CodeTenantEmailExists)
+	ErrTenantAlreadyDisabled = New(CodeTenantAlreadyDisabled)
+	ErrTenantAlreadyEnabled  = New(CodeTenantAlreadyEnabled)
+	ErrTenantDeleted         = New(CodeTenantDeleted)
+	ErrTenantDomainImmutable = New(CodeTenantDomainImmutable)
+	ErrTenantCreateFailed    = New(CodeTenantCreateFailed)
+	ErrTenantUpdateFailed    = New(CodeTenantUpdateFailed)
+	ErrTenantGetFailed       = New(CodeTenantGetFailed)
+	ErrTenantDeleteFailed    = New(CodeTenantDeleteFailed)
+)
+
+// 平台账号与角色便捷错误实例
+var (
+	ErrPlatformAccountNotFound      = New(CodePlatformAccountNotFound)
+	ErrPlatformUsernameExists       = New(CodePlatformUsernameExists)
+	ErrPlatformPhoneExists          = New(CodePlatformPhoneExists)
+	ErrPlatformEmailExists          = New(CodePlatformEmailExists)
+	ErrPlatformAccountLocked        = New(CodePlatformAccountLocked)
+	ErrPlatformAccountDisabled      = New(CodePlatformAccountDisabled)
+	ErrPlatformLastAdmin            = New(CodePlatformLastAdmin)
+	ErrPlatformCannotOperateSelf    = New(CodePlatformCannotOperateSelf)
+	ErrPlatformMustChangePassword   = New(CodePlatformMustChangePassword)
+	ErrPlatformRoleNotFound         = New(CodePlatformRoleNotFound)
+	ErrPlatformRoleKeyExists        = New(CodePlatformRoleKeyExists)
+	ErrPlatformRoleNameExists       = New(CodePlatformRoleNameExists)
+	ErrPlatformRoleBuiltInImmutable = New(CodePlatformRoleBuiltInImmutable)
+	ErrPlatformRoleInUse            = New(CodePlatformRoleInUse)
+	ErrPlatformInvalidPermission    = New(CodePlatformInvalidPermission)
+	ErrPlatformRoleRequired         = New(CodePlatformRoleRequired)
+	ErrPlatformSessionNotFound      = New(CodePlatformSessionNotFound)
+	ErrPlatformRefreshTokenReplayed = New(CodePlatformRefreshTokenReplayed)
+)
+
+// 审计便捷错误实例
+var (
+	ErrAuditLogNotFound       = New(CodeAuditLogNotFound)
+	ErrAuditTimeRangeTooLarge = New(CodeAuditTimeRangeTooLarge)
+	ErrAuditExportTooLarge    = New(CodeAuditExportTooLarge)
+	ErrAuditTimeRangeRequired = New(CodeAuditTimeRangeRequired)
 )
