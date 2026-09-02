@@ -7,4 +7,5 @@ const (
 	TenantManagerSvr = "tenantmanagersvr"
 	AuthNexusSvr     = "authnexussvr"
 	PlatformSvr      = "platformsvr"
+	AuditSvr         = "auditsvr"
 )
