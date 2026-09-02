@@ -6,4 +6,5 @@ const (
 	IdentityhubSvr   = "identityhubsvr"
 	TenantManagerSvr = "tenantmanagersvr"
 	AuthNexusSvr     = "authnexussvr"
+	PlatformSvr      = "platformsvr"
 )
