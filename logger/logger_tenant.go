@@ -1,13 +1,11 @@
 package logger
 
 import (
-	"context"
 	"fmt"
 	"slices"
 	"sync"
 
 	"github.com/qkja/gobase/config"
-	"github.com/qkja/gobase/tenant"
 	"github.com/sirupsen/logrus"
 )
 
@@ -50,27 +48,21 @@ func debugTenantEnabled(tenantID string) bool {
 }
 
 // DebugTenant 租户级 debug 日志。
-// 仅当「全局 debug 开启」或「ctx 中租户在 debug_tenant_ids 列表」时输出，
-// 自动带 [TenantId:xxx] [TraceId:xxx] 前缀。
+// 仅当「全局 debug 开启」或「tenantID 在 debug_tenant_ids 列表」时输出，
+// 自动带 [TenantId:xxx] 前缀。租户 id 由调用方显式传入，不从 ctx 取值。
 //
 // 用法：在业务逻辑中需要细粒度排查的地方调用。
 //
-//	logger.DebugTenant(ctx, "processing order: %v", order)
-func DebugTenant(ctx context.Context, format string, v ...any) {
-	info := tenant.GetInfo(ctx)
-	tenantID := ""
-	if info != nil {
-		tenantID = info.TenantID
-	}
+//	logger.DebugTenant(req.GetTenantCode(), "processing order: %v", order)
+func DebugTenant(tenantID string, format string, v ...any) {
 	if !debugTenantEnabled(tenantID) {
 		return
 	}
 
 	msg := fmt.Sprintf(format, v...)
-	prefix := formatCtx(ctx) // [TraceId:xxx] 前缀（无 trace 则空）
 	if tenantID != "" {
-		tenantDebugLogger.Debugf("[TenantId:%s] %s%s", tenantID, prefix, msg)
+		tenantDebugLogger.Debugf("[TenantId:%s] %s", tenantID, msg)
 	} else {
-		tenantDebugLogger.Debugf("%s%s", prefix, msg)
+		tenantDebugLogger.Debugf("%s", msg)
 	}
 }

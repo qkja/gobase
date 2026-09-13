@@ -1,5 +1,10 @@
 package constants
 
+/* 业务 code 前缀（统一在 gobase 定义，各服务引用，避免字符串漂移） */
+const (
+	AuditLogCodePrefix = "aud"
+)
+
 /* 通用状态：enable/disable（平台账号、租户管理员等） */
 const (
 	StatusEnable  = "enable"

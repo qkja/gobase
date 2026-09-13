@@ -1,7 +1,12 @@
 package errors
 
 import (
+	"context"
+	"strings"
+
 	"github.com/qkja/gobase/i18n"
+	"github.com/qkja/gobase/platform"
+	"github.com/qkja/gobase/tenant"
 )
 
 // BizError 业务错误——仅包含错误码和消息两个字段（不导出，通过 getter 访问）。
@@ -65,4 +70,58 @@ func Message(code, lang string) string {
 		return s
 	}
 	return code
+}
+
+// GetTenantMsg 按错误码 + ctx 中租户上下文（tenant.Info）的当前页面语言（中/英）生成文案。
+// 语言取自 ctx 中 tenant.Info（由网关经 tenant.WithInfo 写入）：
+//   - UILanguage：租户控制台（界面）语言，即"当前页面"语言，优先；
+//   - Language：租户（业务）语言，UILanguage 为空时回退。
+//
+// 识别为 zh 前缀时用中文（i18n.LangZh）；无租户信息或其它语言一律默认英文（i18n.LangEn）。
+func GetTenantMsg(ctx context.Context, code string) string {
+	if info := tenant.GetInfo(ctx); info != nil {
+		ui := info.UILanguage
+		if ui == "" {
+			ui = info.Language
+		}
+		if strings.HasPrefix(ui, "zh") {
+			return Message(code, i18n.LangZh)
+		}
+	}
+	return Message(code, i18n.LangEn)
+}
+
+// GetPlatformMsg 按错误码 + ctx 中平台管理员上下文（platform.Info）的当前页面语言（中/英）生成文案。
+// 语言取自 ctx 中 platform.Info（由网关经 platform.WithInfo 写入），字段语义同 GetTenantMsg。
+//
+// 识别为 zh 前缀时用中文（i18n.LangZh）；无平台管理员信息或其它语言一律默认英文（i18n.LangEn）。
+func GetPlatformMsg(ctx context.Context, code string) string {
+	if info := platform.GetInfo(ctx); info != nil {
+		ui := info.UILanguage
+		if ui == "" {
+			ui = info.Language
+		}
+		if strings.HasPrefix(ui, "zh") {
+			return Message(code, i18n.LangZh)
+		}
+	}
+	return Message(code, i18n.LangEn)
+}
+
+// GetTenantMsg 返回按租户上下文当前页面语言本地化的错误消息（取错误自身携带的 code）。
+// 用法：err.GetTenantMsg(ctx)。
+func (e *BizError) GetTenantMsg(ctx context.Context) string {
+	if e == nil {
+		return ""
+	}
+	return GetTenantMsg(ctx, e.code)
+}
+
+// GetPlatformMsg 返回按平台管理员上下文当前页面语言本地化的错误消息（取错误自身携带的 code）。
+// 用法：err.GetPlatformMsg(ctx)。
+func (e *BizError) GetPlatformMsg(ctx context.Context) string {
+	if e == nil {
+		return ""
+	}
+	return GetPlatformMsg(ctx, e.code)
 }
