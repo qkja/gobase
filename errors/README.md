@@ -23,14 +23,18 @@ msg := errors.Message("1003", i18n.LangEn) // "Resource not found"
 
 所有错误码为 **string 类型**，全部由 gobase 内置（业务**禁止**自定义/注册新码）：
 
-| 码段 | 含义 | 数量 |
+按**服务**分段，每个服务 1000 个码：
+
+| 码段 | 归属 | 覆盖实体 |
 |------|------|------|
-| `"0"` | 成功 | 1 |
-| `"1001"`–`"1999"` | 通用错误 | 10 |
-| `"2000"`–`"2999"` | 目录域 | 10 |
-| `"3000"`–`"3999"` | 组织架构 | 12 |
-| `"4000"`–`"4999"` | 用户 | 14 |
-| `"1999"` | 未知错误（兜底） | 1 |
+| `"0"` | 成功 | — |
+| `"1001"`–`"1009"` / `"1999"` | 公共段 | 全服务通用 + 未知错误兜底（数值固定，勿改；网关自身错误也在本段） |
+| `"2000"`–`"2999"` | identityhubsvr | 目录域 / 组织 / 用户 / 用户角色 / 同步 |
+| `"3000"`–`"3999"` | tenantmanagersvr | 租户 / 租户管理员 / 租户管理角色 |
+| `"4000"`–`"4999"` | platformsvr | 平台账号 / 平台角色 |
+| `"5000"`–`"5999"` | authnexussvr | 三域会话 / 登录 |
+| `"6000"`–`"6999"` | auditsvr | 审计 |
+| `"7000"`–`"7999"` | 预留段 | 留空（网关错误使用公共段） |
 
 ### 通用错误码
 
@@ -48,65 +52,47 @@ msg := errors.Message("1003", i18n.LangEn) // "Resource not found"
 | `CodeResourceExhausted` | `"1009"` | 请求过于频繁 |
 | `CodeUnknown` | `"1999"` | 未知错误（兜底） |
 
-### 业务域错误码
+完整常量清单与码值见 `code.go`（每个常量带中文注释）。各服务子段：
 
 <details>
-<summary>目录域（2000–2999）</summary>
+<summary>identityhubsvr（2000–2999）</summary>
 
-| 常量 | 码值 |
-|------|------|
-| `CodeDirNotFound` | `"2001"` |
-| `CodeDirDomainExists` | `"2002"` |
-| `CodeDirAlreadyDisabled` | `"2003"` |
-| `CodeDirAlreadyEnabled` | `"2004"` |
-| `CodeDirNotEmpty` | `"2005"` |
-| `CodeDirDisabled` | `"2006"` |
-| `CodeDirCreateFailed` | `"2007"` |
-| `CodeDirUpdateFailed` | `"2008"` |
-| `CodeDirGetFailed` | `"2009"` |
-| `CodeDirDeleteFailed` | `"2010"` |
+- 目录域 `2001`–`2008`：`CodeDirNotFound`、`CodeDirNameExists`、`CodeDirAlreadyDisabled`、`CodeDirAlreadyEnabled`、`CodeDirNotEmpty`、`CodeDirDisabled`、`CodeDirTypeImmutable`、`CodeDirLimitExceeded`
+- 组织 `2020`–`2026`：`CodeOrgNotFound`、`CodeOrgParentNotFound`、`CodeOrgCycle`、`CodeOrgHasChildren`、`CodeOrgHasUsers`、`CodeOrgCrossDirectory`、`CodeOrgLevelExceeded`
+- 用户 `2040`–`2047`：`CodeUserNotFound`、`CodeUserNameExists`、`CodeUserAlreadyDisabled`、`CodeUserAlreadyEnabled`、`CodeUserLocked`、`CodeUserDisabled`、`CodeUserBadCredential`、`CodeUserExternalSourceReadonly`
+- 用户角色 `2060`–`2064`：`CodeUserRoleNotFound`、`CodeUserRoleNameExists`、`CodeUserRoleAlreadyDisabled`、`CodeUserRoleAlreadyEnabled`、`CodeUserRoleMemberCrossDirectory`
+- 同步 `2080`：`CodeSyncUnsupportedDirectory`
 
 </details>
 
 <details>
-<summary>组织架构（3000–3999）</summary>
+<summary>tenantmanagersvr（3000–3999）</summary>
 
-| 常量 | 码值 |
-|------|------|
-| `CodeOrgNotFound` | `"3001"` |
-| `CodeOrgCreateFailed` | `"3002"` |
-| `CodeOrgParentNotFound` | `"3003"` |
-| `CodeOrgCycle` | `"3004"` |
-| `CodeOrgHasChildren` | `"3005"` |
-| `CodeOrgHasUsers` | `"3006"` |
-| `CodeOrgCrossDirectory` | `"3007"` |
-| `CodeOrgLevelExceeded` | `"3008"` |
-| `CodeOrgUpdateFailed` | `"3009"` |
-| `CodeOrgGetFailed` | `"3010"` |
-| `CodeOrgDeleteFailed` | `"3011"` |
-| `CodeOrgMoveFailed` | `"3012"` |
+- 租户 `3010`–`3014`：`CodeTenantNotFound`、`CodeTenantAlreadyDisabled`、`CodeTenantAlreadyEnabled`、`CodeTenantDeleted`、`CodeTenantDisabled`
+- 租户管理员 `3100`–`3108`（`3107` 留空）：`CodeTenantAdminNotFound`、`CodeTenantAdminNameExists`、`CodeTenantAdminAlreadyDisabled`、`CodeTenantAdminAlreadyEnabled`、`CodeTenantAdminLocked`、`CodeTenantAdminDisabled`、`CodeTenantAdminBadCredential`、`CodeTenantAdminLastSuperAdmin`
+- 租户管理角色 `3200`–`3205`：`CodeTenantRoleNotFound`、`CodeTenantRoleNameExists`、`CodeTenantRoleBuiltInImmutable`、`CodeTenantRoleInUse`、`CodeTenantRoleInvalidPageCode`、`CodeTenantRoleScopeRequired`
 
 </details>
 
 <details>
-<summary>用户（4000–4999）</summary>
+<summary>platformsvr（4000–4999）</summary>
 
-| 常量 | 码值 |
-|------|------|
-| `CodeUserNotFound` | `"4001"` |
-| `CodeUserUsernameExists` | `"4002"` |
-| `CodeUserAlreadyDisabled` | `"4003"` |
-| `CodeUserAlreadyEnabled` | `"4004"` |
-| `CodeUserOrgAlreadySecondary` | `"4005"` |
-| `CodeUserOrgIsPrimary` | `"4006"` |
-| `CodeUserOrgNotSecondary` | `"4007"` |
-| `CodeUserPrimaryOrgNotFound` | `"4008"` |
-| `CodeUserCreateFailed` | `"4009"` |
-| `CodeUserUpdateFailed` | `"4010"` |
-| `CodeUserGetFailed` | `"4011"` |
-| `CodeUserDeleteFailed` | `"4012"` |
-| `CodeUserEnableFailed` | `"4013"` |
-| `CodeUserDisableFailed` | `"4014"` |
+- 平台账号 `4010`–`4016`：`CodePlatformUserNotFound`、`CodePlatformUserNameExists`、`CodePlatformUserAlreadyDisabled`、`CodePlatformUserAlreadyEnabled`、`CodePlatformUserLocked`、`CodePlatformUserDisabled`、`CodePlatformUserBadCredential`
+- 平台角色 `4100`–`4104`：`CodePlatformRoleNotFound`、`CodePlatformRoleNameExists`、`CodePlatformRoleBuiltInImmutable`、`CodePlatformRoleInUse`、`CodePlatformRoleInvalidPageCode`
+
+</details>
+
+<details>
+<summary>authnexussvr（5000–5999）</summary>
+
+- `5001`–`5003`：`CodeSessionInvalid`、`CodeRefreshTokenReplayed`、`CodeMustChangePassword`
+
+</details>
+
+<details>
+<summary>auditsvr（6000–6999）</summary>
+
+- `6001`–`6004`：`CodeAuditLogNotFound`、`CodeAuditTimeRangeTooLarge`、`CodeAuditExportTooLarge`、`CodeAuditTimeRangeRequired`
 
 </details>
 
@@ -173,7 +159,7 @@ msg := errors.Message("99999", i18n.LangEn) // "Unknown error"
 
 ### 默认翻译
 
-gobase 通过 `go:embed` 内嵌全部 48 个错误码的中英文翻译（`i18n/default/zh-CN.po` + `en-US.po`），开箱即用，无需初始化。
+gobase 通过 `go:embed` 内嵌全部错误码（含公共码共 78 个）的中英文翻译（`i18n/default/zh-CN.po` + `en-US.po`），开箱即用，无需初始化。
 
 ### .po 文件格式
 
@@ -184,7 +170,7 @@ gobase 通过 `go:embed` 内嵌全部 48 个错误码的中英文翻译（`i18n/
 1001 系统内部错误
 1003 资源不存在
 1999 未知错误
-4001 用户不存在
+2040 用户不存在
 ```
 
 ### 服务覆盖翻译
@@ -202,7 +188,7 @@ your-service/
 ```
 # i18n/zh-CN.po —— 只写需要覆盖的码
 1001 服务器开小差了，请稍后重试
-4001 该用户不存在哦
+2040 该用户不存在哦
 ```
 
 ### 查找链
@@ -225,16 +211,16 @@ import (
 )
 
 func (s *Service) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*pb.CreateUserResp, error) {
-    if req.Username == "" {
+    if req.Name == "" {
         return nil, gobaseErrors.ErrInvalidArgument
     }
 
-    exists, err := s.repo.ExistsByUsername(ctx, req.Username)
+    exists, err := s.repo.ExistsByName(ctx, req.DirectoryCode, req.Name)
     if err != nil {
         return nil, gobaseErrors.ErrInternal
     }
     if exists {
-        return nil, gobaseErrors.ErrUserUsernameExists
+        return nil, gobaseErrors.ErrUserNameExists
     }
 
     return &pb.CreateUserResp{}, nil
@@ -272,6 +258,6 @@ i18n/
 ├── i18n.go          # InitI18N / T() / Tf() 全局翻译 API
 ├── datamap.go       # Lookup() + embed 默认 .po + 服务文件叠加
 └── default/
-    ├── zh-CN.po     # go:embed 内嵌中文默认翻译（48 条）
-    └── en-US.po     # go:embed 内嵌英文默认翻译（48 条）
+    ├── zh-CN.po     # go:embed 内嵌中文默认翻译（每个错误码一条）
+    └── en-US.po     # go:embed 内嵌英文默认翻译（每个错误码一条）
 ```

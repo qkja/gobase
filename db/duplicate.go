@@ -13,7 +13,7 @@ import (
 // 业务服务在仓储层「直接插入 → 捕获 E11000 → 按索引名判定冲突来源」，禁止「先查后插」查重
 // （docs 租户管理需求说明 T6 / 平台账号与权限需求说明 P9）。
 //
-// indexToCode: 索引名 → 错误码常量（如 "idx_pa_username_unique" → gerrors.CodePlatformUsernameExists）。
+// indexToCode: 索引名 → 错误码常量（如 "idx_pfu_name_unique" → gerrors.CodePlatformUserNameExists）。
 // 命中返回对应 BizError；非重复键错误返回 nil，调用方按原错误处理。
 func MapDuplicateKey(err error, indexToCode map[string]string) error {
 	if err == nil || !mongo.IsDuplicateKeyError(err) {

@@ -10,72 +10,69 @@
 1009 Too many requests
 1999 Unknown error
 2001 Directory not found
-2002 Domain already exists
+2002 Directory name already exists
 2003 Directory already disabled
 2004 Directory already enabled
-2005 Directory not empty
+2005 Directory is not empty; detach its organizations, users, and user roles before deleting
 2006 Directory disabled
-2007 Create directory failed
-2008 Update directory failed
-2009 Get directory failed
-2010 Delete directory failed
-3001 Organization not found
-3002 Create organization failed
-3003 Parent organization not found
-3004 Cyclic reference
-3005 Has children, cannot delete
-3006 Has users, cannot delete
-3007 Cross directory operation
-3008 Level limit exceeded
-3009 Update organization failed
-3010 Get organization failed
-3011 Delete organization failed
-3012 Move organization failed
-4001 User not found
-4002 Username already exists
-4003 User already disabled
-4004 User already enabled
-4005 Organization already secondary
-4006 Organization is primary
-4007 Organization not secondary
-4008 Primary organization not found
-4009 Create user failed
-4010 Update user failed
-4011 Get user failed
-4012 Delete user failed
-4013 Enable user failed
-4014 Disable user failed
-5001 Tenant not found
-5002 Tenant domain already exists
-5003 Phone number already in use
-5004 Email already in use
-5005 Tenant already disabled
-5006 Tenant already enabled
-5007 Tenant deleted
-5008 Tenant domain is immutable
-5009 Create tenant failed
-5010 Update tenant failed
-5011 Query tenant failed
-5012 Delete tenant failed
-5101 Platform account not found
-5102 Username already in use
-5103 Phone number already in use
-5104 Email already in use
-5105 Account locked
-5106 Account disabled
-5107 At least one enabled account with this permission is required
-5108 Cannot operate on yourself
-5109 Please change your initial password first
-5110 Role not found
-5111 Role key already in use
-5112 Role name already in use
-5113 Built-in role cannot be modified or deleted
-5114 Role is still in use by accounts
-5115 Invalid permission
-5116 At least one role is required
-5117 Session not found or expired
-5118 Invalid credential, please sign in again
-5201 Audit log not found
-5202 Query time range exceeds limit
-5203 Export exceeds limit, please narrow conditions
-5204 Please specify a time range
+2007 Directory type cannot be changed after creation
+2008 Directory limit reached
+2020 Organization not found
+2021 Parent organization not found
+2022 Cyclic reference in the organization hierarchy
+2023 Has child organizations, cannot delete
+2024 Organization still has users, cannot delete
+2025 Cannot operate across directories
+2026 Organization level limit exceeded
+2040 User not found
+2041 User name already exists in this directory
+2042 User already disabled
+2043 User already enabled
+2044 User locked
+2045 User disabled
+2046 Incorrect account or password
+2047 Externally sourced users are read-only for identity fields and cannot be deleted (disable only)
+2060 User role not found
+2061 User role name already exists in this directory
+2062 User role already disabled
+2063 User role already enabled
+2064 Members must belong to the same directory as the user role
+2080 Only ad / ldap directories support sync configuration; local directories do not
+3010 Tenant not found
+3011 Tenant already disabled
+3012 Tenant already enabled
+3013 Tenant deleted
+3014 The tenant is disabled; sign-in and operations are unavailable
+3100 Tenant admin not found
+3101 Admin name already exists
+3102 Tenant admin already disabled
+3103 Tenant admin already enabled
+3104 Tenant admin locked
+3105 Tenant admin disabled
+3106 Incorrect account or password
+3108 At least one enabled admin with the super-admin role must remain
+3200 Tenant role not found
+3201 Role name already exists
+3202 Built-in role cannot be modified, deleted, or disabled
+3203 Role is still bound to admins; unbind it first
+3204 Invalid page code
+3205 A custom role must include at least one data scope
+4010 Platform user not found
+4011 Account name already exists
+4012 Platform user already disabled
+4013 Platform user already enabled
+4014 Platform user locked
+4015 Platform user disabled
+4016 Incorrect account or password
+4100 Platform role not found
+4101 Platform role name already exists
+4102 Built-in role cannot be modified, deleted, or disabled
+4103 Role is still bound to users; unbind it first
+4104 Invalid page code
+5001 Session not found or expired
+5002 Invalid or revoked refresh credential, please sign in again
+5003 Please change your initial password first
+6001 Audit log not found
+6002 Query time range exceeds limit
+6003 Export exceeds limit, please narrow conditions
+6004 Please specify a time range

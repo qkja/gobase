@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	. "github.com/agiledragon/gomonkey/v2"
-	. "github.com/smartystreets/goconvey/convey"
 	"github.com/qkja/gobase/i18n"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGlobalVars(t *testing.T) {
@@ -22,22 +22,22 @@ func TestGlobalVars(t *testing.T) {
 		Convey("目录域错误应预填充正确的 code 和中文 msg", func() {
 			So(ErrDirNotFound.GetCode(), ShouldEqual, CodeDirNotFound)
 			So(ErrDirNotFound.GetMessage(), ShouldEqual, "目录域不存在")
-			So(ErrDirCreateFailed.GetCode(), ShouldEqual, CodeDirCreateFailed)
-			So(ErrDirCreateFailed.GetMessage(), ShouldEqual, "新增目录域失败")
+			So(ErrDirNotEmpty.GetCode(), ShouldEqual, CodeDirNotEmpty)
+			So(ErrDirNotEmpty.GetMessage(), ShouldEqual, "目录域非空（仍有组织 / 用户 / 用户角色挂靠），无法删除")
 		})
 
 		Convey("组织错误应预填充正确的 code 和中文 msg", func() {
 			So(ErrOrgNotFound.GetCode(), ShouldEqual, CodeOrgNotFound)
 			So(ErrOrgNotFound.GetMessage(), ShouldEqual, "组织不存在")
 			So(ErrOrgCycle.GetCode(), ShouldEqual, CodeOrgCycle)
-			So(ErrOrgCycle.GetMessage(), ShouldEqual, "存在循环引用")
+			So(ErrOrgCycle.GetMessage(), ShouldEqual, "组织层级存在循环引用")
 		})
 
 		Convey("用户错误应预填充正确的 code 和中文 msg", func() {
 			So(ErrUserNotFound.GetCode(), ShouldEqual, CodeUserNotFound)
 			So(ErrUserNotFound.GetMessage(), ShouldEqual, "用户不存在")
-			So(ErrUserUsernameExists.GetCode(), ShouldEqual, CodeUserUsernameExists)
-			So(ErrUserUsernameExists.GetMessage(), ShouldEqual, "用户名已存在")
+			So(ErrUserNameExists.GetCode(), ShouldEqual, CodeUserNameExists)
+			So(ErrUserNameExists.GetMessage(), ShouldEqual, "目录域内用户名称已存在")
 		})
 	})
 }

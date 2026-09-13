@@ -77,8 +77,8 @@ go test ./errors -run TestRegistryContainsAllConsts
 
 ### 业务错误（`errors/` 与 `server/rsp` 是两层，别混淆）
 
-- **`errors/`** 面向 gRPC 业务错误。`BizError`（实现 `error` + `GRPCStatus()`）可直接在 gRPC handler 里 `return nil, errors.ErrXxx()`（gRPC 自动序列化为带消息的 status）。**业务只允许使用 gobase 内置错误码，禁止自定义/注册错误码**（无 `Register` 导出）；消息由 `i18n` 唯一提供并在创建错误时随 `BizError` 带上，响应用 `err.GetMessage()` 取；业务**不**手动查翻译拼响应（无 `errors.Message(code, lang)`）、**不**跨进程解包业务码（无 `FromError`/ErrorInfo）。
-- **码段划分：** `0` 成功，`1001–1999` 通用，`2000–4999` 目录/组织/用户域（本包内置，即唯一可用码集）。注册表是 `map[string]errorMeta`（code→grpc 映射）。**消息文案由 `i18n` 唯一提供**：gobase 内嵌 `i18n/default/{zh-CN,en-US}.po`（含全部内置码翻译），服务如需覆盖可在自己 `i18n/<lang>.po` 按 **code 键**配置（格式每行 `code 文案`）；未配置文案的码兜底为「未知错误」。
+- **`errors/`** 面向 gRPC 业务错误。`BizError`（实现 `error` + `GRPCStatus()`）可直接在 gRPC handler 里 `return nil, errors.ErrXxx()`（gRPC 自动序列化为带消息的 status）。**业务只允许使用 gobase 内置错误码，禁止自定义/注册错误码**（无 `Register` 导出）；消息由 `i18n` 提供。取文案：`errors.Message(code, lang)` 按显式语言；`errors.GetTenantMsg(ctx, code)` / `GetPlatformMsg(ctx, code)` 按 ctx 中 `tenant.Info` / `platform.Info` 的界面语言（`UILanguage → Language → en` 回退）；`BizError` 上有对应方法 `err.GetTenantMsg(ctx)` / `err.GetPlatformMsg(ctx)`。**不**跨进程解包业务码（无 `FromError`/ErrorInfo）。
+- **码段划分（按服务，每服务 1000 个码）：** `0` 成功；`1001–1999` **公共**（网关自身错误也在本段）；`2000–2999` identityhubsvr（目录域/组织/用户/用户角色/同步，`2001`=目录域不存在）；`3000–3999` tenantmanagersvr（租户/租户管理员/租户角色）；`4000–4999` platformsvr（平台账号/平台角色）；`5000–5999` authnexussvr（三域认证与会话）；`6000–6999` auditsvr；`7000–7999` 预留。常量即唯一可用码集，code→gRPC status 的映射由 `BizError.GRPCStatus()` 自身承担（无独立注册表）。**消息文案由 `i18n` 唯一提供**：gobase 内嵌 `i18n/default/{zh-CN,en-US}.po`（含全部内置码翻译），服务如需覆盖可在自己 `i18n/<lang>.po` 按 **code 键**配置（格式每行 `code 文案`）；未配置文案的码兜底为「未知错误」。
 - **不要用 `fmt.Errorf("%w")` 包装要返回给 gRPC 的 `BizError`** —— grpc v1.41.0 的 `status.FromError` 只做顶层类型断言，包装会让 gRPC 识别不到 `GRPCStatus()`、消息也丢；改用 `errors.ErrXxx().WithCause(err)`。
 - **`server/rsp`** 是另一套 HTTP 响应层，用 **int** 码和 `{"code":0,...}` 信封，与上面无关。
 
